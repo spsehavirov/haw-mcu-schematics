@@ -1,0 +1,82 @@
+\documentclass[border=0.2cm]{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+
+\usetikzlibrary{fit}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
+
+
+\tikzset{
+    box/.style={teal, ultra thick, dashed},
+    item/.style={cyan!.9!blue, draw=cyan!80, minimum width=4cm, minimum height=1cm, text width=3cm,align=center,fill=cyan!10},
+    operation block/.style={green!.9!teal,draw=teal!80, minimum width=2cm, minimum height=2cm, text width=2cm,align=center,fill=teal!10},
+    variable input/.style={draw=teal!80, minimum width=.5cm, minimum height=.5cm,fill=teal!20},
+    accumulator/.style={green!.9!teal, draw=teal!80, minimum width=1cm, minimum height=2cm,fill=teal!10},
+    status register/.style={draw=teal!80, minimum width=.5cm, minimum height=1.5cm,fill=teal!20},
+    instruction path/.style={-Latex, blue, thick},
+    data path/.style={-Latex, red, line width=1mm},
+    data path reverse/.style={Latex-, red, line width=1mm},
+}
+
+\begin{document}
+\begin{circuitikz}[european, straight voltages]
+
+    \draw (0, 0) node[item] (RI) {Registr instrukce} 
+        ++(0, -2) node[item] (DI) {Dekodér instrukce}
+        ++(0, -1.5) node[item] (GRI) {Generátor\\řídících impulzů};
+
+    \draw ($(RI.north west)!.5!(DI.south west)$) ++(-3.5, 0) node[item] (RA) {Registr adresy};
+    
+    \foreach \where in {0.25, 0.5, 0.75} {
+         \draw [instruction path] ($(DI.south west)!\where!(DI.south east)$) -- ($(GRI.north west)!\where!(GRI.north east)$);
+    }
+
+    \draw [instruction path] ($(GRI.north west)!.5!(GRI.south west)$) -- ++(-.5, 0) |- ($(RI.south west)!.5!(RI.north west)$);
+    \draw [instruction path] ($(GRI.north west)!.5!(GRI.south west)$) -- ++(-.5, 0) |- ($(RA.south east)!.5!(RA.north east)$);
+
+    \draw [data path] ($(RI.south west)!.5!(RI.south east)$) -- ($(DI.north west)!.5!(DI.north east)$);
+    \draw [data path] ($(RA.south west)!.5!(RA.south east)$) -- ++(0, -6.5) coordinate (addr_out);
+    \draw (addr_out) ++(0, -0.25) node[red] {Výstup adres}; 
+
+    \draw [data path reverse] ($(RI.north west)!.5!(RI.north east)$) -- ++(0, 1.75) coordinate (data_in) -- ++(0, 1.25) coordinate (data_in_label);
+    \draw (data_in_label) ++(0, .25) node[red] {Vstup dat};
+    \draw [data path reverse] ($(RA.north west)!.5!(RA.north east)$) -- (data_in-|RA) -- (data_in);
+
+    \node[draw,box, cyan!80, inner ysep=0.75cm, inner xsep=0.25cm, fit=(RA) (GRI) (RI) (DI),label={[cyan!80]142:{\textbf{Řadič}}}] {};
+
+    \draw (GRI) ++(10, -1) node[operation block] (OB) {Operační\\blok};
+    \draw (OB.north east) ++(.5, -.1) node[variable input, anchor=north east] (OB_a) {};
+    \draw (OB.south east) ++(.5, +.1) node[variable input, anchor=south east] (OB_b) {};
+
+    \draw (OB) ++(-3, 0) node[accumulator] (ACC) {Střádač};
+
+    \draw [data path] ($(OB.north west)!.5!(OB.south west)$) -- ($(ACC.north east)!.5!(ACC.south east)$);
+    \draw [data path] ($(ACC.north west)!.75!(ACC.north east)$) -- ++(0, .5) coordinate (j0) -- (j0-|OB_a.east) -- ++(1, 0) |- (OB_a);
+    \draw [data path] ($(ACC.south west)!.75!(ACC.south east)$) coordinate (j1) -- (j1|-addr_out) coordinate (data_out);
+    \draw (data_out) ++(0, -0.25) node[red] {Výstup dat}; 
+
+    \draw (ACC.north west) ++(-.05, 0) node[status register, anchor=north east] (SR) {};
+
+    \node[draw,box, yshift=0.25cm, inner ysep=1.25cm, inner xsep=0.25cm, fit=(ACC) (SR) (OB) (OB_a) (OB_b),label={[teal, above left]north east:{\textbf{Aritmeticko-logická jednotka}}}] {};
+
+    \draw ($(ACC.south west)!.25!(ACC.south east)$) coordinate (acc_instr_in); % Prepare the midpoint for the path label
+    \draw [instruction path] (GRI.south) -- ++(0, -2)  coordinate (j6) -- (j6-|acc_instr_in) node[below, midway] {Řídící signály} -- (acc_instr_in);
+    
+    \draw ($(ACC.north west)!.25!(ACC.north east)$) coordinate (j4);
+    \draw [data path] (data_in) -- (data_in-|j4) -- (j4);
+
+    \draw [instruction path] ($(GRI.north east)!.15!(GRI.south east)$) -| ($(OB.north east)!.5!(OB.north west)$);
+    \draw [instruction path] ($(GRI.north east)!.75!(GRI.south east)$) coordinate (j2) -- (j2-|SR.west) coordinate (j3);
+    \draw (j3) ++(0, -0.25) [instruction path] -- ++(-2, 0) node[teal, midway, below, xshift=-0.55cm] (SR_label) {reg. příznaků};
+
+    \draw (SR_label) ++(0, 2) node[blue, text width=2cm] {Řízení\\ artimet.\\ jednotky};
+
+    \draw [data path] (j4) ++(0, 1) coordinate (j5) -- (j5-|OB_b.east) -- ++(1.25, 0) |- (OB_b);
+\end{circuitikz}
+\end{document}
