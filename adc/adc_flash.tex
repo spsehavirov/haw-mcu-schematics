@@ -16,7 +16,7 @@
 
     % Operační zesilovače
     \foreach \i [remember=\i as \lasti] in {0, ..., 6} {
-        \draw (0,  -1.75*\i) node[op amp,yscale=-1, scale=0.75] (op\i) {\i};
+        \draw (0,  -1.75*\i) node[op amp,yscale=-1, scale=0.75] (op\i) {};
         \draw (op\i.+) to[short] ++(-0.5, 0) coordinate (op_p\i);;
         \draw (op\i.-) to[short, -*] ++(-1.5, 0) coordinate (op_m\i);
         \ifnum\i=0
