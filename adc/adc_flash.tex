@@ -1,0 +1,64 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usetikzlibrary{calc}
+
+\begin{document}
+\begin{circuitikz}[
+    european, 
+    straight voltages,
+    3-bit decoder/.style={dipchip, num pins=14, no topmark, hide numbers, draw only pins={1-7, 10-12}, external pins width=0}
+]
+
+    % Operační zesilovače
+    \foreach \i [remember=\i as \lasti] in {0, ..., 6} {
+        \draw (0,  -1.75*\i) node[op amp,yscale=-1, scale=0.75] (op\i) {\i};
+        \draw (op\i.+) to[short] ++(-0.5, 0) coordinate (op_p\i);;
+        \draw (op\i.-) to[short, -*] ++(-1.5, 0) coordinate (op_m\i);
+        \ifnum\i=0
+            % skip first
+        \else
+            \draw (op_m\i) to[R, l_=$R$] (op_m\lasti);
+            \draw (op_p\i) to[short, -*] (op_p\lasti);
+        \fi   
+    }
+    
+    \draw ($(op0.out)!0.5!(op6.out)$) ++(1.75,0) node[3-bit decoder] (d) {Dekodér};
+    \foreach \pin/\label in {1/$ in_7 $, 7/$ in_ 1 $, 12/$ MSB $, 10/$ LSB $} {
+        \ifnum\pin>9
+            \node [left, font=\tiny] at (d.bpin \pin) {\label};
+        \else
+            \node [right, font=\tiny] at (d.bpin \pin) {\label};
+        \fi  
+    }
+    % Propojky na dekoder
+    \foreach \i [count=\h from 1] in {0, ..., 2} {
+        \draw (d.bpin \h) |- ++(-0.25*\h, 0) |- (op\i.out);
+    }
+    \foreach \i [count=\pin from 4, count=\o from 0] in {3, ..., 6} {
+        \draw (d.bpin \pin) -- ($ (d.bpin \pin) +(-1, 0) -(-.25*\o, 0) $) |- (op\i.out);
+        
+    }
+
+    % Vystupy
+    \foreach \p in {10, ..., 12} {
+        \draw (d.bpin \p) to[short, -o] ++(1, 0) coordinate (y\p);
+    }
+    \draw (y11) node [label={[label distance=1em,]right:\Large{{$Y$}}}] {};
+
+    \draw (op_m6) to[R={$R/2$}] ++(0, -2) node[ground, label={[label distance=0em]right:{$0 V$}}] (GND) {} ;
+
+    \draw (op_m0) to[R,l_=$R$] ++(0, 3) coordinate (p_ref) to[short, -o] ++(0, 0.0) node[above] {\large{$U_{ref}$}};
+
+    \draw (op_p0|-p_ref) -- (op_p0);
+    \draw (op_p0|-p_ref) to[short, -o] ++(0, 0.0) node[above] {\large{$U_{x}$}};
+    
+    \draw (op_m1) to[blue, R, l_=$R$, v^<=$U_{LSB}$] (op_m0);
+    
+
+\end{circuitikz}
+\end{document}
