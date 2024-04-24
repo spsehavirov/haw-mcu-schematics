@@ -1,0 +1,61 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+
+\renewcommand\familydefault\sfdefault
+
+\usetikzlibrary{arrows,calc,decorations.pathreplacing,angles,quotes}
+
+\begin{document}
+    \begin{circuitikz}[
+        european, 
+        straight voltages,
+        block/.style={minimum size=1.25cm, draw, thick,anchor=west,align=center},
+        brace/.style={decorate, decoration={brace, mirror, raise=12pt}, thick}
+    ]
+        \draw (4, 4) node[mixer, scale=.8] (mix) {};
+        \draw (mix.w) node[inputarrow] {}
+            -- ++(-.5, 0) node[below] {$ \text{U}_{\text{DA}} $} 
+            -- ++(-.5, 0) node[block, anchor=east] (dac) {DA};
+        \draw (mix.e) 
+            -- ++(.5, 0) node[below] {$ \text{U}_{\text{R}} $} 
+            -- ++(.5, 0) node[block, anchor=west] (adc2) {$ \text{AD}_{\text{2}} $\\\scriptsize 4 bity};
+        \draw (mix.n) node[inputarrow, rotate=-90] {} 
+            -- ++(0, 1) node[right] (ux_mix) {$ \text{U}_{\text{x}} $} ;
+        \draw (dac.west) ++(-1.75, 0) node[block, anchor=east] (adc1) {$ \text{AD}_{\text{1}} $\\\scriptsize 4 bity};
+        
+        % Shorts between the ADC1 and DAC
+        \draw (adc1.south) ++(0, -1) coordinate (y_origin);
+        \foreach \i in {1, ..., 4} {
+            \pgfmathsetmacro{\lineSpacing}{0.2*\i}
+            \pgfmathsetmacro{\dotSpacing}{(1.5) - (0.25*\i)}
+            \pgfmathtruncatemacro{\y}{3+\i}
+            \draw ($(adc1.north east)!\lineSpacing!(adc1.south east)$) to[short, -*] ++(\dotSpacing, 0) coordinate (y\y) to[short] ($(dac.north west)!\lineSpacing!(dac.south west)$);
+            \draw (y\y) -- (y\y|-y_origin)  node[inputarrow, rotate=-90] {} node[below, font=\scriptsize] {$\text{Y}_{\text{\y}}$};
+        }
+    
+        \draw[brace] ($ (y7|-y_origin) -(.2, 0) $) -- ($(y4|-y_origin) +(.2, 0) $);
+        \draw ($ (y7|-y_origin)!.5!(y4|-y_origin) $) ++(0,-.55) node[below] {$MSB$};
+    
+        % Shorts between the ADC2 and DAC
+        \foreach \i [count=\y from 0] in {1, ..., 4} {
+            \pgfmathsetmacro{\lineSpacing}{0.2*\i}
+            \pgfmathsetmacro{\dotSpacing}{(1.5) - (0.25*\i)}
+            \draw ($(adc2.north east)!\lineSpacing!(adc2.south east)$) to[short] ++(\dotSpacing, 0) coordinate (y\y);
+            \draw (y\y) -- (y\y|-y_origin)  node[inputarrow, rotate=-90] {} node[below, font=\scriptsize] {$\text{Y}_{\text{\y}}$};
+        }
+    
+        \draw[brace] ($ (y3|-y_origin) -(.2, 0) $) -- ($(y0|-y_origin) +(.2, 0) $);
+        \draw ($ (y3|-y_origin)!.5!(y0|-y_origin) $) ++(0,-.55) node[below] {$LSB$};
+    
+        \draw (adc1.west) node[inputarrow] {} to[short,-*] ++(-.75, 0) coordinate (ux_j);
+        \draw (ux_j) -- (ux_j|-ux_mix) -- (ux_mix);
+        \draw (ux_j) to[short, -o] ++(-.75, 0) node[left] {$ \text{U}_{\text{x}} $};
+    \end{circuitikz}
+\end{document}
