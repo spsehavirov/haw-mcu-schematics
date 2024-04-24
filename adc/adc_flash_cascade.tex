@@ -41,7 +41,7 @@
         }
     
         \draw[brace] ($ (y7|-y_origin) -(.2, 0) $) -- ($(y4|-y_origin) +(.2, 0) $);
-        \draw ($ (y7|-y_origin)!.5!(y4|-y_origin) $) ++(0,-.55) node[below] {$MSB$};
+        \draw ($ (y7|-y_origin)!.5!(y4|-y_origin) $) ++(0,-.55) node[below] {$ \text{MSB} $};
     
         % Shorts between the ADC2 and DAC
         \foreach \i [count=\y from 0] in {1, ..., 4} {
@@ -52,7 +52,7 @@
         }
     
         \draw[brace] ($ (y3|-y_origin) -(.2, 0) $) -- ($(y0|-y_origin) +(.2, 0) $);
-        \draw ($ (y3|-y_origin)!.5!(y0|-y_origin) $) ++(0,-.55) node[below] {$LSB$};
+        \draw ($ (y3|-y_origin)!.5!(y0|-y_origin) $) ++(0,-.55) node[below] {$ \text{LSB} $};
     
         \draw (adc1.west) node[inputarrow] {} to[short,-*] ++(-.75, 0) coordinate (ux_j);
         \draw (ux_j) -- (ux_j|-ux_mix) -- (ux_mix);
