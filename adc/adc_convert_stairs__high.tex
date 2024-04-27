@@ -12,10 +12,9 @@
 
 \begin{document}
     \begin{tikzpicture}
-    
-    \definecolor{baseColor}{RGB}{18, 54, 69}
-    \definecolor{accentColor}{RGB}{1, 103, 143}
-    %\definecolor{baseColor}{teal}{1.0} % Light gray
+        \definecolor{baseColor}{RGB}{18, 54, 69}
+        \definecolor{accentColor}{RGB}{1, 103, 143}
+        
         %\draw[lightgray, step=.25] (-1,-5) grid (12, 6);
         
         % Axes
@@ -35,22 +34,30 @@
 
         
         % Stairs
-        \foreach \i [remember=\i as \lasti] in {0, ..., 15} {
-            \coordinate (s\i) at ($ (.5*\i, .25*\i) +(.5, 0) $);
-            \draw[thick, gray] plot[const plot] coordinates {(s\i) (s\lasti)};
+        \foreach \i in {0, ..., 15} {
+            \coordinate (s\i) at ($ (.5*\i, .25*\i) $);
         }
-        \draw[thick, gray] plot[const plot] coordinates {(0,0) (s0)};
-        \coordinate (s16) at ($ (.5*15,0) +(.5, 0) $);
-        \draw[thick, gray] plot[const plot] coordinates {(s15) (s16)};
+        \coordinate (s16) at ($ (.5*16,0) $);
 
-        \foreach \i [count=\xi from 0, remember=\i as \lasti (initially 16)] in {17, ..., 22} {
-            \coordinate (s\i) at ($ (.5*\i, .25*\xi) $);
-            \draw[thick, gray] plot[const plot] coordinates {(s\i) (s\lasti)};
+        \foreach \i [count=\xi from 0] in {17, ..., 23} {
+            \coordinate (s\i) at ($ (.5*\i, .25*\xi) + (-.5, 0) $);
         }
+
+        \def\ptsa{}
+        \foreach \a in {0,...,23} {\xdef\ptsa{\ptsa(s\a)}; }
+        \path[draw, gray, thick] plot [const plot] coordinates {\ptsa};
+
+        \draw[very thin] (s10) -- ++(1.25, 0) coordinate (uLSB_top); %densely dotted
+        \draw[very thin] (s9) -- (uLSB_top|-s9) coordinate (uLSB_bot);
+
+        \draw[-latex] (uLSB_top) ++(-2pt, 10pt) -- ++(0, -10pt);
+        \draw[-latex] (uLSB_bot) ++(-2pt, -10pt) -- ++(0, 10pt);
+        \draw ($ (uLSB_bot) + (-2pt, 0) $) -- ($ (uLSB_top) + (-2pt, 0) $);
+        \draw ($ (uLSB_top)!.5!(uLSB_bot) $) node[right] {$ \text{U}_{\text{LSB}} $};
 
         \draw[very thick, accentColor] (-0.05, 3.65) -- (11, 3.65);
         \draw (4, 3.65) node[above] {$ \text{U}_{\text{VST}} $}; % \text{(t)
-        \draw (s7) node[below] {$ \text{U}_{\text{DAC}} $};
+        \draw (s7) ++(0, -.25) node[below] {$ \text{U}_{\text{DAC}} $};
 
         % Axes
         \coordinate (origin_bot) at (0, -4);
@@ -60,16 +67,28 @@
             \draw (origin_bot) ++(0, 1.5*\n) coordinate (\t);
             \draw ($ (\t) +(2pt,0pt) $) -- ($ (\t) +(-2pt,0pt) $) node[left] {$ \text{\t} $};
         }
+
+       \def\ptsb{}
+       \xdef\ptsb{\ptsb(origin_bot)}
+        \foreach \i in {15} {
+            \pgfmathtruncatemacro{\ii}{\i + 1}%
+            \pgfmathtruncatemacro{\iii}{\i + 2}%
+            \draw (s\i|-H) coordinate (r\i);
+            \draw (s\ii|-H) coordinate (r\ii);
+            \draw (r\ii|-origin_bot) coordinate (r\iii);
+    
+            \draw[dashed, gray] (r\i) -- (s\i);
+            \draw[dashed, gray] (r\iii) -- (s\ii);
+            \xdef\ptsb{\ptsb(r\i)}
+            \xdef\ptsb{\ptsb(r\ii)}
+            \xdef\ptsb{\ptsb(r\iii)}
+        }
+        \xdef\ptsb{\ptsb(10.5, -4)}
         
-        \draw (s15|-H) coordinate (r15);
-        \draw (s14|-H) coordinate (r14);
-        \draw (r15|-origin_bot) coordinate (r16);
-        \draw[very thick, accentColor] plot[const plot] coordinates {(origin_bot) (r14) (r15) (r16) (10.5, -4) };
+        
+        \draw[very thick, accentColor] plot[const plot] coordinates {\ptsb};
 
-        \draw[dashed, gray] (r14) -- (s14);
-        \draw[dashed, gray] (r15) -- (s16);
-
-        \draw[thin, gray] (r16) ++(0, -.5) coordinate (c0) -- (r16) ;
+        \draw[thin, gray] (r17) ++(0, -.5) coordinate (c0) -- (r16) ;
         \draw[thin, gray] (origin_bot) ++(0, -.5) coordinate (c1) -- (origin_bot) ;
 
         \draw[latex-latex] (c0) -- node[below] {$ \text{T}_{\text{p}} $} (c1);
