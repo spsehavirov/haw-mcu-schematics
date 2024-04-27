@@ -1,0 +1,77 @@
+\documentclass[tikz,margin=10pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+
+\renewcommand\familydefault\sfdefault
+\usetikzlibrary{calc}
+
+\begin{document}
+    \begin{tikzpicture}
+    
+    \definecolor{baseColor}{RGB}{18, 54, 69}
+    \definecolor{accentColor}{RGB}{1, 103, 143}
+    %\definecolor{baseColor}{teal}{1.0} % Light gray
+        %\draw[lightgray, step=.25] (-1,-5) grid (12, 6);
+        
+        % Axes
+        \draw [->] (-.5,0) -- (11,0) node [right] {$ \text{t} $};
+        \draw [->] (0,-0.5) -- (0,5) node [above] {$ \text{U} $};
+        % Origin
+        \node (origin) at (0,0) [below left] {$ \text{0} $};
+
+        \foreach \t [count=\n from 1] in {5, 10, 15, 20} {
+            \draw (\n*2.5, 0) coordinate (T\t) ($ (T\t) +(0, 2pt) $) -- ($ (T\t) +(0, -2pt) $) node[below] {$ \text{\t T} $};
+        }
+
+        \foreach \t [count=\n from 1] in {5, 10, 15, 20} {
+            \draw[shift={(0,\n)}] (0, \n) (2pt,0pt)
+                -- (-2pt,0pt) node[left] {$ \text{\t} $};
+        }
+
+        
+        % Stairs
+        \foreach \i [remember=\i as \lasti] in {0, ..., 15} {
+            \coordinate (s\i) at ($ (.5*\i, .25*\i) +(.5, 0) $);
+            \draw[thick, gray] plot[const plot] coordinates {(s\i) (s\lasti)};
+        }
+        \draw[thick, gray] plot[const plot] coordinates {(0,0) (s0)};
+        \coordinate (s16) at ($ (.5*15,0) +(.5, 0) $);
+        \draw[thick, gray] plot[const plot] coordinates {(s15) (s16)};
+
+        \foreach \i [count=\xi from 0, remember=\i as \lasti (initially 16)] in {17, ..., 22} {
+            \coordinate (s\i) at ($ (.5*\i, .25*\xi) $);
+            \draw[thick, gray] plot[const plot] coordinates {(s\i) (s\lasti)};
+        }
+
+        \draw[very thick, accentColor] (-0.05, 3.65) -- (11, 3.65);
+        \draw (4, 3.65) node[above] {$ \text{U}_{\text{VST}} $}; % \text{(t)
+        \draw (s7) node[below] {$ \text{U}_{\text{DAC}} $};
+
+        % Axes
+        \coordinate (origin_bot) at (0, -4);
+        \draw [->] (origin_bot) -- (11,-4) node [right] {$ \text{t} $};
+        \draw [->] (origin_bot) -- (0,-1.5) node [above] {$ \text{U}_{\text{k}} $};
+        \foreach \t [count=\n from 0] in {L, H} {
+            \draw (origin_bot) ++(0, 1.5*\n) coordinate (\t);
+            \draw ($ (\t) +(2pt,0pt) $) -- ($ (\t) +(-2pt,0pt) $) node[left] {$ \text{\t} $};
+        }
+        
+        \draw (s15|-H) coordinate (r15);
+        \draw (s14|-H) coordinate (r14);
+        \draw (r15|-origin_bot) coordinate (r16);
+        \draw[very thick, accentColor] plot[const plot] coordinates {(origin_bot) (r14) (r15) (r16) (10.5, -4) };
+
+        \draw[dashed, gray] (r14) -- (s14);
+        \draw[dashed, gray] (r15) -- (s16);
+
+        \draw[thin, gray] (r16) ++(0, -.5) coordinate (c0) -- (r16) ;
+        \draw[thin, gray] (origin_bot) ++(0, -.5) coordinate (c1) -- (origin_bot) ;
+
+        \draw[latex-latex] (c0) -- node[below] {$ \text{T}_{\text{p}} $} (c1);
+    \end{tikzpicture}
+\end{document}

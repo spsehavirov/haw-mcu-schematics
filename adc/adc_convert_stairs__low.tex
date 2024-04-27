@@ -1,0 +1,113 @@
+\documentclass[tikz,margin=10pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+
+\renewcommand\familydefault\sfdefault
+\usetikzlibrary{calc}
+
+\begin{document}
+    \begin{tikzpicture}
+    
+    \definecolor{baseColor}{RGB}{18, 54, 69}
+    \definecolor{accentColor}{RGB}{1, 103, 143}
+    %\definecolor{baseColor}{teal}{1.0} % Light gray
+        %\draw[lightgray!10!white, step=.25] (-1,-5) grid (12, 6);
+        
+        % Axes
+        \node (origin) at (0,0) [below left] {$ \text{0} $};
+
+        \draw [->] (-.5,0) -- (11,0) node [right] {$ \text{t} $};
+        \foreach \t [count=\n from 1] in {5, 10, 15, 20} {
+            \draw (\n*2.5, 0) coordinate (T\t) ($ (T\t) +(0, 2pt) $) -- ($ (T\t) +(0, -2pt) $) node[below] {$ \text{\t T} $};
+        }
+
+        \draw [->] (0,-0.5) -- (0,5) node [above] {$ \text{U} $};
+        \foreach \t [count=\n from 1] in {5, 10, 15, 20} {
+            \draw[shift={(0,\n)}] (0, \n) (2pt,0pt)
+                -- (-2pt,0pt) node[left] {$ \text{\t} $};
+        }
+
+        
+        % Stairs
+        \foreach \i in {0, ..., 4} {
+            \coordinate (s\i) at ($ (.5*\i, .25*\i) $);
+        }
+        
+        \coordinate (s5) at (2.5, 0);
+        \foreach \i [count=\n from 0] in {6, ..., 10} {
+            \coordinate (s\i) at ($ (.5*\n, .25*\n) +(2.5, 0) $);
+        }
+        
+        \coordinate (s11) at (5, 0);
+        \foreach \i [count=\n from 0] in {12, ..., 16} {
+            \coordinate (s\i) at ($ (.5*\n, .25*\n) +(5, 0) $);
+        }
+        
+        \coordinate (s17) at (7.5, 0);
+        \foreach \i [count=\n from 0] in {18, ..., 22} { % remember=\i as \lasti (initially 17), 
+            \coordinate (s\i) at ($ (.5*\n, .25*\n) +(7.5, 0) $);
+        }
+        \coordinate (s23) at (10, 0);
+
+        \foreach \i [count=\n from 0] in {24, ..., 26} {
+            \coordinate (s\i) at ($ (.5*\n, .25*\n) +(10, 0) $);
+        }
+
+       % \foreach \j [count=\k from 0, remember=\n as \lastn (initially 0)] in {0,2.5,5,7.5,10} {
+       %     \foreach \i [evaluate=\i as \n using int(\i+\k*5)] in {0,...,4} {
+       %         \ifnum\i=0
+       %             \coordinate (s\n) at (\j, 0);
+       %         \else
+       %             \coordinate (s\n) at ($ (\lastn) + (0.5,0.25) $);
+       %         \fi
+       %     }
+       % }
+
+        \def\ptsa{}
+        \foreach \a in {0,...,26} {\xdef\ptsa{\ptsa(s\a)}; }
+        \path[draw, gray, thick] plot [const plot] coordinates {\ptsa};
+
+        \draw[very thick, accentColor] (-0.05, 0.9) -- (11, 0.9);
+        \draw (4, .9) node[above] {$ \text{\textcolor{accentColor}{U}}_{\text{\textcolor{accentColor}{VST}}} $}; % \text{(t)
+        \draw (s3) ++(0, -.25) node[below, text=gray] {$ \text{U}_{\text{DAC}} $};
+
+        % Axes
+        \coordinate (origin_bot) at (0, -4);
+        \draw [->] (origin_bot) -- (11,-4) node [right] {$ \text{t} $};
+        \draw [->] (origin_bot) -- (0,-1.5) node [above] {$ \text{U}_{\text{k}} $};
+        \foreach \t [count=\n from 0] in {L, H} {
+            \draw (origin_bot) ++(0, 1.5*\n) coordinate (\t);
+            \draw ($ (\t) +(2pt,0pt) $) -- ($ (\t) +(-2pt,0pt) $) node[left] {$ \text{\t} $};
+        }
+
+       \def\ptsb{}
+       \xdef\ptsb{\ptsb(origin_bot)}
+        \foreach \i in {4, 10, 16, 22} {
+            \pgfmathtruncatemacro{\ii}{\i + 1}%
+            \pgfmathtruncatemacro{\iii}{\i + 2}%
+            \draw (s\i|-H) coordinate (r\i);
+            \draw (s\ii|-H) coordinate (r\ii);
+            \draw (r\ii|-origin_bot) coordinate (r\iii);
+    
+            \draw[dashed, gray] (r\i) -- (s\i);
+            \draw[dashed, gray] (r\iii) -- (s\ii);
+            \xdef\ptsb{\ptsb(r\i)}
+            \xdef\ptsb{\ptsb(r\ii)}
+            \xdef\ptsb{\ptsb(r\iii)}
+        }
+        \xdef\ptsb{\ptsb(10.5, -4)}
+        
+        
+        \draw[very thick, accentColor] plot[const plot] coordinates {\ptsb};
+
+        \draw[thin, gray] (r6) ++(0, -.5) coordinate (c0) -- (r6) ;
+        \draw[thin, gray] (origin_bot) ++(0, -.5) coordinate (c1) -- (origin_bot) ;
+
+        \draw[latex-latex] (c0) -- node[below] {$ \text{T}_{\text{p}} $} (c1);
+    \end{tikzpicture}
+\end{document}
