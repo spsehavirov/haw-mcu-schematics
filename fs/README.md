@@ -20,5 +20,12 @@
 <picture>
   <!--source media="(prefers-color-scheme: dark)" srcset="block-diagram/mcpu_schema_flat.png">
   <source media="(prefers-color-scheme: light)" srcset="block-diagram/mcpu_schema.png"-->
-  <img alt="Indexová alokace" src="fs_inode.png">
+  <img alt="Indexová alokace" src="fs_index.png">
+</picture>
+
+#### I-node
+<picture>
+  <!--source media="(prefers-color-scheme: dark)" srcset="block-diagram/mcpu_schema_flat.png">
+  <source media="(prefers-color-scheme: light)" srcset="block-diagram/mcpu_schema.png"-->
+  <img alt="Indexová alokace" src="fs_inode_flat.png">
 </picture>
