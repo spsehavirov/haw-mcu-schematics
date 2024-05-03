@@ -1,0 +1,121 @@
+\documentclass[border=0.2cm]{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+
+\usetikzlibrary{fit}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
+\usetikzlibrary{backgrounds}
+
+\tikzset{
+    every node/.style={
+        font=\sffamily
+    },
+    process/.style={
+        cyan!.9!blue, draw=cyan!80, fill=cyan!20, minimum width=1cm, minimum height=0.5cm,align=center,fill=cyan!10
+    },
+    queue item/.style={
+        teal!.9!green, draw=teal!80, fill=teal!20, minimum width=1cm, minimum height=0.5cm,align=center,fill=teal!10
+    },
+    queue item emph/.style={
+        green!.9!teal, draw=teal!80, fill=teal!20, minimum width=1cm, minimum height=0.5cm,align=center
+    },
+    semaphore box/.style={
+        draw,
+    },
+    semaphore red/.style={
+        fill=red!80!gray, circle, minimum width=0.2cm, minimum height=0.2cm
+    },
+    semaphore green/.style={
+        fill=green!40!gray, circle, minimum width=0.2cm, minimum height=0.2cm
+    },
+    critical section/.style={
+        black!50!green, draw=black!50!green, thick, fill=green!10!white, minimum width=3cm, minimum height=2cm
+    },
+    hide/.style={
+        fill=none, draw=none
+    },
+    msg path/.style={-Latex, red, line width=1mm},
+    msg path reverse/.style={Latex-, red, line width=1mm},
+}
+
+\begin{document}
+\begin{circuitikz}[european, straight voltages]
+
+\begin{scope}[name prefix = lock-]
+    \draw (0, 0) node[process] (p_a) {11} 
+        ++(0, -0.6) node[process] (p_b) {110}
+        ++(0, -0.6) node[process] (p_c) {587};
+
+    \begin{scope}[on background layer]
+      \draw node[cyan!80, fill=cyan!3, draw, dashed, fit=(p_a)(p_b)(p_c), label={[cyan!80, below]south:{\tiny \textbf{Procesy}}}] {};
+    \end{scope}
+
+    \draw (p_a) ++(2.5, -1) node[semaphore red, hide] (sem_red) {} ++(0, -0.4) node[semaphore green] (sem_green) {};
+
+    \begin{scope}[on background layer]
+      \draw node[white, fill=white, draw=black!50!gray, thick, fit=(sem_red)(sem_green), label={[above, font={\tiny\bfseries\sffamily}]{{Binární semafor}}}] (semaphore) {};
+    \end{scope}
+
+    \draw (semaphore.south west) ++(0.8, -.5) node[critical section, anchor=west] (crit_section) {\textbf{Kritická sekce}};
+
+
+    \edef\points{}
+    \draw (crit_section.west) ++(-1, -1) coordinate (queue_start);
+    \foreach \queue in {0,...,5} {
+        \draw (queue_start) ++(0, -\queue*0.5) node[queue item] (queue_\queue) { };
+        \xdef\points{(queue_\queue) \points}
+    }
+
+    \begin{scope}[on background layer]
+      \draw node[teal!80, fill=teal!3, draw, dashed, fit=\points, label={[teal!80, below]south:{\tiny \textbf{Fronta semaforu}}}] {};
+    \end{scope}
+
+    \draw [msg path reverse] (crit_section.west) -- ++(-1.5, 0) -- ++(0, 3) node[above] {$lock$};
+\end{scope}
+
+\begin{scope}[name prefix = unlock-, shift={(9cm, 0)}]
+    \draw (0, 0) node[process, hide] (p_a) {} 
+        ++(0, -0.6) node[process, hide] (p_b) {}
+        ++(0, -0.6) node[process, hide] (p_c) {};
+
+    \begin{scope}[on background layer]
+      \draw node[cyan!80, fill=cyan!3, draw, dashed, fit=(p_a)(p_b)(p_c), label={[cyan!80, below]south:{\tiny \textbf{Procesy}}}] {};
+    \end{scope}
+
+    \draw (p_a) ++(2.5, -1) node[semaphore red] (sem_red) {} ++(0, -0.4) node[semaphore green, hide] (sem_green) {};
+
+    \begin{scope}[on background layer]
+      \draw node[white, fill=white, draw=black!50!gray, thick, fit=(sem_red)(sem_green), label={[above, font={\tiny\bfseries\sffamily}]{{Binární semafor}}}] (semaphore) {};
+    \end{scope}
+
+    \draw (semaphore.south west) ++(0.8, -.5) node[critical section, anchor=west] (crit_section) {\textbf{Kritická sekce}};
+
+    \edef\points{}
+    \draw (crit_section.west) ++(-1, -1) coordinate (queue_start);
+    \foreach \queue in {0,...,5} {
+        \draw (queue_start) ++(0, -\queue*0.5) node[queue item] (queue_\queue) { };
+        \xdef\points{(queue_\queue) \points}
+    }
+
+    \draw (queue_0) node[queue item emph] {11};
+    \draw (queue_1) node[queue item emph] {110};
+
+    \begin{scope}[on background layer]
+      \draw node[teal!80, fill=teal!3, draw, dashed, fit=\points, label={[teal!80, below]south:{\tiny \textbf{Fronta semaforu}}}] {};
+    \end{scope}
+
+    \draw (crit_section.center)  ++(0, 0.5) node[process,draw] (p_actual) {587};
+
+    \draw [msg path] (crit_section.east) -- ++(1.5, 0) node[right] {$unlock$} coordinate (unlock);
+
+    \draw [msg path] (queue_5.east) -- (unlock|-queue_5.east) node[right] {do $READY$ fronty};
+\end{scope}
+    
+\end{circuitikz}
+\end{document}
