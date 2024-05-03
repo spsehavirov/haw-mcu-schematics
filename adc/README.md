@@ -1,6 +1,6 @@
 # AD převodníky
 
-![Převod](dist/png/adc_conversion.png)
+![Převod](dist/png/ad_conversion_flat.png)
 
 # Flash (paralelní) AD
 
