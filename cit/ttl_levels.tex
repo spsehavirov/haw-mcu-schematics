@@ -1,0 +1,122 @@
+% Needs 2 passes, as the overlay is used!
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{tabularray}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+\usepackage{graphicx}
+
+\ctikzset{logic ports=ieee} 
+
+\renewcommand\familydefault\sfdefault
+
+\newcommand{\lDriver}{Driver}
+\newcommand{\lReceiver}{Receiver}
+\newcommand{\lCharInput}{Input characteristics}
+\newcommand{\lCharOutput}{Output characteristics}
+\newcommand{\lForbiddenZone}{Forbidden\\Zone}
+\newcommand{\lLogicOutHigh}{Logic High\\Output Range}
+\newcommand{\lLogicOutLow}{Logic Low\\Output Range}
+\newcommand{\lLogicInHigh}{Logic High\\Input Range}
+\newcommand{\lLogicInLow}{Logic Low\\Input Range}
+
+\newtoggle{czech}
+\settoggle{czech}{true}
+\iftoggle{czech} {
+    \renewcommand{\lDriver}{Vysílač}
+    \renewcommand{\lReceiver}{Příjimač}
+    \renewcommand{\lCharInput}{Vstupní charakterisktika}
+    \renewcommand{\lCharOutput}{Výstupní charakteristika}
+    \renewcommand{\lForbiddenZone}{Zakázané\\pásmo}
+    \renewcommand{\lLogicOutHigh}{Logická 1\\Výstupní rozsah}
+    \renewcommand{\lLogicOutLow}{Logická 0\\Výstupní rozsah}
+    \renewcommand{\lLogicInHigh}{Logická 1\\Vstupní rozsah}
+    \renewcommand{\lLogicInLow}{Logická 0\\Vstupní rozsah}
+}
+
+\usetikzlibrary{intersections, shapes.arrows, spath3, shapes.geometric, fit, backgrounds, calc, tikzmark}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\begin{document}
+    \begin{circuitikz}[straight voltages,
+        bus/.style={single arrow, single arrow head extend=2pt},
+        hdd/.style={thick, cylinder, inner sep = 18pt, shape border rotate = 90, draw = themeGrey, aspect=0.1},
+        cluster/.style={draw, minimum size=0.75cm, rounded corners=2pt},
+        l/.style={align=left},
+        r/.style={align=right},
+        c/.style={align=center}
+    ]
+
+    \begin{scope}[on background layer]
+        \draw[very thin, densely dashed] (-0.5, 0) coordinate (top) -- (9.5, 0) node[midway, above] {$ \text{V}_{DD} $};
+        \draw[very thin, densely dashed] (-0.5, -5) coordinate (bot) -- (9.5, -5) node[midway, below] {$ \text{GND} $};
+    \end{scope}
+    
+    \begin{scope}[]
+        \draw (2, 0) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=1cm, yshift=.5\pgflinewidth, fill=themeBlue!10] (out block hi) {};
+        \draw (out block hi.south) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=3cm, yshift=\pgflinewidth] (out block mid) {};
+        \draw (out block mid.south) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=1cm, yshift=\pgflinewidth, fill=themeBlue!10] (out block lo) {};
+
+        \draw (7, 0) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=1.75cm, yshift=.5\pgflinewidth, fill=themeBlue!10] (in block hi) {};
+        \draw (in block hi.south) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=1.5cm, yshift=\pgflinewidth, align=center] (in block mid) { \lForbiddenZone };
+        \draw (in block mid.south) node[anchor=north, draw=themeGrey, thick, minimum width=3cm, minimum height=1.75cm, yshift=\pgflinewidth, fill=themeBlue!10] (in block lo) {};
+        
+        % NM_{H,L} => NOISE MARGIN
+        \draw[dotted] ($ (out block hi.south east) + (0, \pgflinewidth) $) to ($ (\tikztostart)!.6!(in block hi.south west|-\tikztostart) $) coordinate (NMh top);
+        \draw[dotted] ($ (in block hi.south west) + (0, \pgflinewidth) $) to ($ (\tikztostart)!.6!(out block hi.south east|-\tikztostart) $) coordinate (NMh bot);
+
+        \draw[dotted] ($ (out block lo.north east) + (0, -\pgflinewidth) $) to ($ (\tikztostart)!.6!(in block lo.north west|-\tikztostart) $) coordinate (NMl bot);
+        \draw[dotted] ($ (in block lo.north west) + (0, -\pgflinewidth) $) to ($ (\tikztostart)!.6!(out block lo.north east|-\tikztostart) $) coordinate (NMl top);
+
+        \draw[latex-latex] (NMh top) ++(-.2, 0) to node[midway, right] {$ \text{NM}_{H} $} (\tikztostart|-NMh bot);
+        \draw[latex-latex] (NMl bot) ++(-.2, 0) to node[midway, right] {$ \text{NM}_{L} $} (\tikztostart|-NMl top);
+        
+        % V_O{H,L}
+        \draw[dotted] ($ (out block hi.south west) + (0, \pgflinewidth) $) --++(-1, 0)  coordinate (Voh);
+        \draw[latex-latex] (Voh) ++(.25, 0) to (\tikztostart|-top);
+        \draw (Voh) ++(.25, 0) node[below] {$ \text{V}_{OH} $};
+        
+        \draw[dotted] ($ (out block lo.north west) + (0, -\pgflinewidth) $) --++(-1, 0)  coordinate (Vol);
+        \draw[latex-latex] (Vol) ++(.25, 0) to (\tikztostart|-bot);
+        \draw (Vol) ++(.25, 0) node[above] {$ \text{V}_{OL} $};
+
+        % V_I{H,L}
+        \draw[dotted] ($ (in block hi.south east) + (0, \pgflinewidth) $) --++(1, 0) coordinate (Vih);
+        \draw[latex-latex] (Vih) ++(-.25, 0) to (\tikztostart|-top);
+        \draw (Vih) ++(-.25, 0) node[below] {$ \text{V}_{IH} $};
+        
+        \draw[dotted] ($ (in block lo.north east) + (0, -\pgflinewidth) $) --++(1, 0) coordinate (Vil);
+        \draw[latex-latex] (Vil) ++(-.25, 0) to (\tikztostart|-bot);
+        \draw (Vil) ++(-.25, 0) node[above] {$ \text{V}_{IL} $};
+    \end{scope}
+
+    \begin{scope} % Gates + Level labels
+        \draw (out block hi.north) ++(0, 2) node[not port, label={\lDriver}] (driver) {};
+        \draw (in block hi.north) ++(0,2) node[not port,label={\lReceiver}] (recv) {};
+        \draw (recv.out) -- ++(1, 0);
+        \draw (driver.in) -- ++(-1, 0);
+        \draw (driver.out) -- (recv.in);
+
+        \draw ($ (Vil)!.5!(Vil|-bot) $) node[right, align=left, font=\footnotesize] {\lLogicInLow};
+        \draw ($ (Vih)!.5!(Vih|-top) $) node[right, align=left, font=\footnotesize] {\lLogicInHigh};
+
+        \draw ($ (Vol)!.5!(Vol|-bot) $) node[left, align=right, font=\footnotesize] {\lLogicOutLow};
+        \draw ($ (Voh)!.5!(Voh|-top) $) node[left, align=right, font=\footnotesize] {\lLogicOutHigh};
+
+        \draw (in block hi.north) ++(0, 0.5) node [above] {\lCharInput};
+        \draw (out block hi.north) ++(0, 0.5) node [above] {\lCharOutput};
+    \end{scope}
+
+    \end{circuitikz}
+\end{document}
