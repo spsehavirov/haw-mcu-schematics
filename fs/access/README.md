@@ -1,5 +1,13 @@
 # Přístup na disk
 
+## Plotna
+
+![HDD: plotna](dist/png/hdd_platter_flat.png)
+
+## Cylindr
+
+![HDD: cylindr](dist/png/hdd_cylinder_flat.png)
+
 ## FCFS
 
 ![FCFS](dist/png/fs_fcfs_flat.png)
