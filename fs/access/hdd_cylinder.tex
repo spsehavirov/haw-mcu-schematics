@@ -1,0 +1,110 @@
+\documentclass[tikz,margin=5pt]{standalone}
+\usetikzlibrary{3d, perspective}
+\usetikzlibrary {math}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   SETTINGS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*\numPlatters{3}
+\newcommand*\numTracks{8}
+
+\newcommand*\selectTrack{2} % Track  to highlight, negative values disable the selection
+
+\newcommand*\platterSize{8}
+\newcommand*\platterAssemblySize{2}
+\newcommand*\platterDoubleSided{1} % Draw heads on the bottom of the platter
+\newcommand*\showAcctuator{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   CALCULATIONS + HELPERS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor     {baseColor}{RGB}{ 18,  54,  69} % Basic lines and borders
+\definecolor   {accentColor}{RGB}{  1, 103, 143} % Selection
+\definecolor{highlightColor}{RGB}{221, 109,  16} % Crossover of two selections
+
+\tikzset{ hdd border/.style         ={draw=     baseColor!20}}
+\tikzset{ hdd arm top/.style        ={fill=     baseColor!90}}
+\tikzset{ hdd arm bot/.style        ={fill=        baseColor}}
+\tikzset{ hdd track border/.style   ={draw=     baseColor!30}}
+\tikzset{ hdd head/.style           ={fill=      accentColor}}
+\tikzset{ hdd motor assembly/.style ={fill=     baseColor!70}}
+\tikzset{ hdd motor screw/.style    ={fill=     baseColor!90}}
+\tikzset{ hdd platter border/.style ={draw=     baseColor!80}}
+\tikzset{ hdd platter background/.style ={fill=        white}}
+
+\tikzset{ hdd sel track/.style    n args={1}{
+    fill=highlightColor!80, 
+    even odd rule,
+    insert path={%
+        (0,0) circle (\fpeval{\platterStep*{#1}}) 
+        (0,0) circle (\fpeval{\platterStep*\fpeval{{#1}+1}})
+    }
+}}
+
+\tikzset{ hdd platter edge/.style = {
+    draw=baseColor,
+    fill,
+    left color=baseColor!80,
+    right color=lightgray!70
+}}
+
+\tikzset{
+  arm origin/.style n args={2}{insert path={% helpful
+        ({#1},{#2}) -- ++(-1, -6) -- ++(0.5,0) -- cycle
+    }
+  }
+}
+
+\newcommand*\radiusBase{2}
+\newcommand*\radiusStep{.5}
+\newcommand*\platterDisplacement{3}
+\newcommand*\platterStep{\platterAssemblySize + (\platterSize-\platterAssemblySize)/\numTracks}
+
+\ifnum\selectTrack>-1
+    % Make the selected `track` behave more naturally
+    \pgfmathtruncatemacro\selTrack{\numTracks-\selectTrack-1} 
+\else
+    \pgfmathtruncatemacro\selTrack{-1}
+\fi
+
+\begin{document}
+\begin{tikzpicture}[isometric view]
+    \pgfmathsetmacro\armOriginX{4.5} % TODO: Angular motion
+    \pgfmathsetmacro\armOriginY{-4}
+
+    \foreach \i in {1, ..., \numPlatters} {
+        \begin{scope}[canvas is xy plane at z=\i*\platterDisplacement]
+            
+            \ifnum\showAcctuator=1\ifnum\platterDoubleSided=1
+                \fill [hdd arm bot, arm origin=\armOriginX \armOriginY];
+            \fi\fi
+            \fill [hdd platter edge] (0,0) circle (\platterSize);
+            \draw [hdd platter border] (0,0) circle (\platterSize);
+        \end{scope}
+        
+        \begin{scope}[canvas is xy plane at z=\i*\platterDisplacement+0.25]
+            \fill [hdd platter background] (0,0) circle (\platterSize);
+            
+            \foreach \track in {0, ..., \numTracks} {
+                \ifnum\selTrack>-1\ifnum\selTrack=\track
+                    \fill [hdd sel track=\track];
+                \fi\fi
+                \draw [hdd track border] (0, 0) circle (\fpeval{\platterStep*\track});
+            }
+
+            \draw [hdd platter border] (0,0) circle (\platterSize);
+            \fill [hdd motor assembly] (0,0) circle (\platterAssemblySize);
+
+            \foreach \screw in {0, 90, ..., 270} {
+                \fill [hdd motor screw] (0,0) ++(\screw:.5) circle (0.25);
+            }
+
+            \ifnum\showAcctuator=1
+                \fill [hdd arm top, arm origin=\armOriginX \armOriginY];
+                \fill [hdd head] (\armOriginX, \armOriginY) circle (0.1);
+            \fi
+        \end{scope}
+    }
+
+\end{tikzpicture}
+\end{document}
