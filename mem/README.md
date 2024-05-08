@@ -17,3 +17,4 @@
 ## Stránkování
 
 ![Stránkování - 1](dist/png/mem_pagging_flat.png)
+![Stránkování - 2](dist/png/mem_pagging_scheme_flat.png)
