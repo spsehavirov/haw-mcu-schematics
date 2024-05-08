@@ -1,0 +1,105 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\newcommand{\lCPU}{CPU}
+\newcommand{\lLimit}{LA < Limit?}
+\newcommand{\lLimitError}{Výjimka \\\enquote{Chyba segmentace}}
+\newcommand{\lLimitValue}{limit}
+\newcommand{\lBaseValue}{báze}
+\newcommand{\lSegmentPage}{Tabulka \phantom{segmentů}}
+\newcommand{\lMemory}{Fyzická paměť}
+\newcommand{\lAddressLogical}{\phantom{Logická}\\{adresa}}
+\newcommand{\lAddressPhysical}{\phantom{Fyzická}\\{adresa}}
+\newcommand{\PhysicalMemory}{Fyzická paměť}
+\newcommand{\lYes}{ano}
+\newcommand{\lNo}{ne}
+
+\usetikzlibrary{
+	babel,
+	intersections,
+	shapes.arrows,
+	spath3,
+	shapes.geometric,
+	fit,
+	backgrounds,
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	quotes
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\begin{document}
+	\begin{tikzpicture}[
+		cpu/.style={draw, minimum width=3cm, minimum height=2cm, align=center, font=\bfseries},
+		mem/.style={draw, minimum width=3cm, minimum height=8cm, fill=themeGrey!5},
+		mem check/.style={draw, diamond, align=center, font=\scriptsize},
+		mem block/.style={draw, anchor=north, minimum width=3cm, minimum height=3cm, fill=themeBlue!10},
+		sum address/.style={draw, circle, align=center, font=\scriptsize, scale=2},
+		limit error/.style={below, minimum width=2cm, align=center, font=\scriptsize},
+		label address/.style={midway, above, align=center, font=\scriptsize},
+		label mem/.style={above, font=\bfseries\small},
+		addr block/.style={draw, minimum size=.75cm},
+		segment table/.style={draw, fill=themeBlue!10, minimum width=1.5cm, minimum height=3cm},
+		table element/.style={draw, fill=themeBlue!30,minimum width=1.5cm, minimum height=1.2em, font=\scriptsize},
+		mem frame/.style={draw, fill=themeBlue!30,minimum width=3cm, font=\ttfamily\scriptsize},
+		brace mirror/.style={decoration={brace,mirror,raise=5pt}, decorate},
+		brace/.style={decoration={brace,raise=5pt}, decorate},
+		label/.style={font=\scriptsize, align=center},
+		label left/.style={label, align=right, left=6pt},
+		label right/.style={label, align=left, right=6pt},
+	]
+		\path node[cpu] (cpu) {$\text{\lCPU}$};
+		\path (cpu.east) ++(right:1.5cm) node[addr block] (s) {$s$}; \path (s.east) node[addr block, anchor=west, xshift=-\pgflinewidth] (d) {$d$};
+
+		\path (d.east) ++(right:2.5cm) node[mem check] (check) {\lLimit};
+
+		\draw (check.north) ++ (2cm, 4cm) node[segment table, anchor=north] (segment table limit) {}; \draw (segment table limit.east) node[segment table, anchor=west, xshift=-\pgflinewidth] (segment table base) {};
+
+		\draw ($(segment table limit.north)!.6!(segment table limit.south)$) node[table element] (limit) {\lLimitValue}; \draw ($(segment table base.north)!.6!(segment table base.south)$) node[table element] (base) {\lBaseValue};
+
+		\draw ($(segment table limit.north west)!.5!(segment table base.north east)$) node[label mem] (segment table label) {\lSegmentPage};
+
+		\draw (base.east|-check.east) ++(right:1.25cm) node[sum address] (add) {$+$};
+
+		\draw[-latex] (cpu.east) -- (s); \draw[-latex] (d.east) -- (check);
+		\draw[-latex] (limit.west) -| (check.north);
+		\draw[-latex] (base.east) -| (add.north); 
+		\draw[-latex] (check.east) -- node[label, midway, above] {\lYes} (add.west);
+
+		\draw[-latex] (check.south) to node[label, midway, above, rotate=90] {\lNo} ++(0, -1.5cm) node[limit error] {\lLimitError};
+
+		\draw[brace mirror] ($(segment table limit.north west) - (0, 1pt)$) -- node[label left] (s label) {$s$} ($(limit.north west) + (0, 1pt)$);
+		\draw[-latex] (s.north) |- (s label.west);
+
+		\path (add.east) ++(3cm, 0) node[mem] (mem) {}; 
+		\path (mem|-add) ++(up:1cm) node[mem block] (mem block) {};
+
+		\path (mem.north) node[label mem] {$\text{\lMemory}$};
+		\draw[latex-latex] ($(mem block.north west)!.75!(mem block.north east)$) -- node[midway, above, rotate=90] {\lLimitValue} ($(mem block.south west)!.75!(mem block.south east)$);
+
+		\draw[brace mirror] ($(mem.north west) - (0, 1pt)$) -- node[label left] (base label) {\lBaseValue} ($(mem block.north west) + (0, 1pt)$);
+
+		\draw[-latex] (add.east) -- (add.east-|mem.west) coordinate (h0);
+		\draw (h0) ++(right:8pt) -- ++(right:8pt) coordinate (h 1 bot);
+		\draw[latex-latex] (h 1 bot) ++(left:4pt) to node[label, midway, above, rotate=90] {$d$} (\tikztostart|-mem block.north);
+	\end{tikzpicture}
+\end{document}
