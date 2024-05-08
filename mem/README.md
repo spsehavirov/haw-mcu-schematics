@@ -18,3 +18,7 @@
 
 ![Stránkování - 1](dist/png/mem_pagging_flat.png)
 ![Stránkování - 2](dist/png/mem_pagging_scheme_flat.png)
+
+## Segmentace
+
+![Segmentace](dist/png/mem_segmentation_hw_flat.png)
