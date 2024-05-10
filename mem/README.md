@@ -18,6 +18,7 @@
 
 ![Stránkování - 1](dist/png/mem_pagging_flat.png)
 ![Stránkování - 2](dist/png/mem_pagging_scheme_flat.png)
+![Stránkování - TLB](dist/png/mem_pagging_tlb_cache_flat.png)
 
 ## Segmentace
 
