@@ -1,0 +1,123 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\newcommand{\lCPU}{CPU}
+\newcommand{\lLimitValue}{limit}
+\newcommand{\lBaseValue}{báze}
+\newcommand{\lSegmentPage}{Tabulka \phantom{segmentů}}
+\newcommand{\lMemory}{Fyzická paměť}
+\newcommand{\lAddressLogical}{\phantom{Logická}\\{adresa}}
+\newcommand{\lAddressPhysical}{\phantom{Fyzická}\\{adresa}}
+\newcommand{\PhysicalMemory}{Fyzická paměť}
+\newcommand{\lYes}{ano}
+\newcommand{\lNo}{ne}
+\newcommand{\lNumber}{{číslo}}
+\newcommand{\lPage}{{stránky}}
+\newcommand{\lFrame}{{rámce}}
+\newcommand{\lTLB}{TLB}
+\newcommand{\lTLBHit}{TLB hit}
+\newcommand{\lTLBMiss}{TLB miss}
+\newcommand{\lPageTable}{Tabulka stránek}
+
+\usetikzlibrary{
+	babel,
+	intersections,
+	shapes.arrows,
+	spath3,
+	shapes.geometric,
+	fit,
+	backgrounds,
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\begin{document}
+	\begin{tikzpicture}[
+		cpu/.style={draw, minimum width=3cm, minimum height=2cm, align=center, font=\bfseries},
+		mem/.style={draw, minimum width=3cm, minimum height=8cm, fill=themeGrey!5},
+		mem check/.style={draw, diamond, align=center, font=\scriptsize},
+		mem block/.style={draw, anchor=north, minimum width=3cm, minimum height=3cm, fill=themeBlue!10},
+		sum address/.style={draw, circle, align=center, font=\scriptsize, scale=2},
+		limit error/.style={below, minimum width=2cm, align=center, font=\scriptsize},
+		label address/.style={midway, above, align=center, font=\scriptsize},
+		label mem/.style={above, font=\bfseries\small},
+		addr block/.style={draw, minimum size=.75cm},
+		segment table/.style={draw, fill=themeBlue!10, minimum width=1.5cm, minimum height=3cm},
+		page table/.style={draw, fill=themeBlue!10, minimum width=1.5cm, minimum height=3cm},
+        		page table frame/.style={draw, fill=themeBlue!30,minimum width=1.5cm},
+		label page table/.style={below, font=\bfseries\scriptsize, minimum width=1cm},
+		table element/.style={draw, fill=themeBlue!10,minimum width=1.25cm, minimum height=.8em, font=\scriptsize},
+		mem frame/.style={draw, fill=themeBlue!30,minimum width=3cm, font=\ttfamily\scriptsize},
+		brace mirror/.style={decoration={brace,mirror,raise=5pt}, decorate},
+		brace/.style={decoration={brace,raise=5pt}, decorate},
+		label/.style={font=\scriptsize, align=center},
+		label left/.style={label, align=right, left=6pt},
+		label right/.style={label, align=left, right=6pt},
+		label tlb/.style={above, font=\scriptsize, text width=1cm, minimum height=2.5em, align=center},
+	]
+		\path node[cpu] (cpu) {$\text{\lCPU}$};
+		\path (cpu.east) ++(right:2.5cm) node[addr block] (s) {$s$};
+		\path (s.east) node[addr block, anchor=west, xshift=-\pgflinewidth] (d) {$o$};
+		
+		\coordinate (h0) at (7cm, -1.5cm);
+		\foreach \i [count=\n from 1] in {0, ..., 6} {
+			\draw (h\i) node[table element, anchor=north, yshift=\pgflinewidth] (table page \i) {};
+			\draw (table page \i.east) node[table element, anchor=west, xshift=-\pgflinewidth] (table frame  \i) {};
+			\draw (table page \i.south) coordinate (h\n);
+		}
+		
+		\draw (table page 0.north) node[label tlb] {\lNumber\\\lPage};
+		\draw (table frame 0.north) node[label tlb] {\lNumber \\ \lFrame};
+		
+		\draw ($ (s.south west)!.66!(s.south east) $) to (\tikztostart|-table page 3) coordinate (s tlb path edge);
+		\draw (table page 3.west) ++(left:.5cm) coordinate (s helper) -- (s tlb path edge);
+		
+		\foreach \i in {0, ..., 6} { \draw[-{Latex[scale=.75]}] (s helper) |- (table page \i.west); }
+		
+		\draw (d.east) ++(right:4.5cm) node[addr block, anchor=west] (f) {$ r $};
+		\path (f.east) node[addr block, anchor=west, xshift=-\pgflinewidth] (d2) {$o$};
+		
+		\coordinate (f help 33) at ($ (f.south west)!.33!(f.south east) $);
+		\draw[-latex] (table frame 3.east)  -- node[label, midway, above] {\lTLBHit} (f help 33|-table frame 3.east) -- (f help 33);
+		\draw[-latex] (d.north) -- ++(up:.5cm) -| (d2.north);
+		\draw[-latex] (cpu.east) -- node[label, midway, above] {\lAddressLogical} (s.west);
+		
+		 \draw ($ (table page 6.west)!.5!(table frame 6.east) $) ++ (down:1.25cm) node[page table, anchor=north] (page table) {};
+   		 \draw (page table.south) node[label page table] {\lPageTable};
+		 \draw ($ (table page 6.west)!.5!(table frame 6.east) $) node[label page table, below, yshift=-.5em] {\lTLB};
+		
+		 \draw ($ (page table.north)!.5!(page table.south) $) node [page table frame] (page table frame) {$ r $};
+		 \draw[brace mirror]  ($ (page table.north west) - (0, 1pt) $) --  node[label left] {$ s $} ($ (page table frame.north west) + (0, 1pt) $);
+		
+		 \coordinate (f help 66) at ($ (f.south west)!.66!(f.south east) $);
+   		 \draw[-latex] (page table frame.east) -- node[label, midway, above] {\lTLBMiss} (f help 66|-page table frame.east) -- (f help 66);
+   		 \draw[-latex] ($ (s.south west)!.33!(s.south east) $) |- (page table frame.west);
+		
+		 \draw (d2.east) ++(right:3.5cm) node[mem] (mem) {};
+		 \draw[-latex] (d2.east) -- node[label, midway, above] {\lAddressPhysical} (mem);
+		 
+		  \draw (mem.south) node[label page table, below] {\PhysicalMemory};
+	\end{tikzpicture}
+\end{document}
