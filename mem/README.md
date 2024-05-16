@@ -23,3 +23,7 @@
 ## Segmentace
 
 ![Segmentace](dist/png/mem_segmentation_hw_flat.png)
+
+## Segmentace se stránkování
+
+![Segmentace a strankování](dist/png/mem_segmentation_with_pagging_flat.png)
