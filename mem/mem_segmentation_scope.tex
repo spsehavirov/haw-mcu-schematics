@@ -1,0 +1,170 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lSegZero}{Subrutina}
+	\newcommand{\lSegment}{Segment}
+	\newcommand{\lStack}{Stack}
+	\newcommand{\lPhysicalMemory}{Fyzická paměť}
+	\newcommand{\lLimit}{Limit}
+	\newcommand{\lBase}{Báze}
+	\newcommand{\lSegmentTable}{Tabulka segmentů}
+	\newcommand{\lFunction}{Sqrt}
+	\newcommand{\lMainApp}{Hlavní program}
+	\newcommand{\lSymbolTable}{Tabulka symbolů}
+	\newcommand{\lLogicalAddressSpace}{Logický adresový prostor}
+	\newcommand{\lSegmentNumber}{Č. segmentu}
+	\newcommand{\lOffset}{Ofset}
+	\newcommand{\lLogicalAddress}{Logická adresa}
+}
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\newcommand{\SegmentNode}[6]{
+	\node (seg #1) at ($ (0, 0) + (#2:#3) $) [mem segment alone=#4, fill=#5] {};
+	\node at (seg #1.north) [below] {#6};
+	\node at (seg #1.south) [below, font=\scriptsize] {\lSegment\space #1};
+}
+\newcommand{\SegmentMemory}[4] {
+	\node (seg #1 mem) at #4 [mem segment=#2, fill=#3] {\lSegment\space #1};
+}
+\newcommand{\SegmentLabel}[3] {
+	\node at (seg #1 mem.#2 east) [label, right] { #3};
+}
+\newcommand{\TableRow}[1]{
+	\node (table base #1) at (h) [table cell, anchor=north west, minimum width=4em]  {};
+    \node (table limit #1) at (table base #1.east) [table cell, anchor=west, minimum width=4em] {};
+    \node (table label #1) at  (table base #1.west) [left, font=\scriptsize] {#1};
+    \coordinate (h) at (table base #1.south west);
+    
+    \node at (table limit #1) [table label] {\limit};
+	\node at (table base #1) [table label] {\base};
+}
+
+\begin{document}
+	\begin{tikzpicture}[
+		element/.style={draw, fill=white, minimum width=3.5cm, minimum height=1cm, outer sep=0},
+		label/.style={font=\scriptsize},
+		header/.style={font=\small\bfseries},
+		mem segment/.style={label, element, anchor=south, yshift=-\pgflinewidth, minimum height={#1}},
+		mem segment/.default={minimum height=.5cm},
+		mem segment alone/.style={label, element, minimum height={#1}},
+		mem box/.style={draw, inner sep=0, outer sep=0},
+		table cell/.style={draw,font=\scriptsize, minimum height=1.2em, minimum width=2em, inner sep=0, outer sep=0},
+		table header/.style={table cell, anchor=south, minimum width=4em, fill=themeGrey!10},
+		table label/.style={font=\scriptsize, text width=1.5em, align=right},
+		brace mirror/.style={decoration={brace,mirror,raise=1pt}, decorate},
+       	brace/.style={decoration={brace,raise=5pt}, decorate},
+		address seg/.style={draw, fill=white, font=\scriptsize, minimum height=1.2em, minimum width=7em, inner sep=0, outer sep=0, anchor=west},
+		address offset/.style={draw, fill=white, font=\scriptsize, minimum height=1.2em, minimum width=4em, inner sep=0, outer sep=0, anchor=west},
+		address space/.style={draw, ultra thin, fill=black!2, ellipse, inner sep=0, outer sep=0},
+		address box/.style={fill=themeGrey!10, rounded corners=2pt},
+		address label/.style={label, align=right, anchor=east},
+		line to table/.style={-latex, themeBlue, ultra thick},
+		line to memory/.style={-latex, themeOrange, thick, rounded corners=10pt},
+	]
+
+	\begin{scope}[]
+		\begin{scope}[name=address space, xshift=-1cm, yshift=-1cm, scale=.7, every node/.append style={transform shape}]
+			\SegmentNode{0}{30}{5cm}{2cm}{themeOrange!10}{\lSegZero};
+			\SegmentNode{1}{90}{2cm}{.5cm}{themeGreen!20}{\lFunction};
+			\SegmentNode{2}{180}{2.5cm}{1cm}{themeOrange!20}{\lMainApp};
+			\SegmentNode{3}{90}{5cm}{3cm}{themeBlue!10}{\lStack};
+			\SegmentNode{4}{-30}{2cm}{4cm}{themeGrey!10}{\lSymbolTable};
+		\end{scope}
+
+		\begin{scope}[name=address space bubble, on background layer]
+				\node (logical address space) [address space, fit=(seg 0)(seg 1)(seg 2)(seg 3)(seg 4)] {};
+				\node at ($ (logical address space.south) - (0, .5) $) [header] {\lLogicalAddressSpace};
+		\end{scope}
+
+		\begin{scope}[name=memory stack, xshift=15cm, yshift=-6cm]
+			% Segments --> 1mm == 50 (1cm == 500)
+			\SegmentMemory{1}{.5cm}{themeGreen!20}{(0,0)}
+			\SegmentMemory{4}{3cm}{themeGrey!10}{($ (seg 1 mem.north) + (0, 1.4) $)}
+			\SegmentMemory{2}{1cm}{themeOrange!20}{(seg 4 mem.north)}
+			\SegmentMemory{3}{4cm}{themeBlue!10}{(seg 2 mem.north)}
+			\SegmentMemory{0}{2cm}{themeOrange!10}{($ (seg 3 mem.north) + (0, .6) $)}
+			\coordinate (mem begin) at ($ (seg 0 mem.north) + (0, 1) $);
+			\node (mem) [mem box, fit=(seg 0 mem)(seg 1 mem)(seg 2 mem)(seg 3 mem)(seg 4 mem)(mem begin)] {};
+			% Labels
+			\node at (mem.north east) [label, right] { 0 };	
+			\foreach \id/\dir/\value in {
+				0/north/500,  0/south/1500,
+				3/north/1800, 3/south/3800,
+				2/south/4300,
+				4/south/5800,
+				1/north/6500, 1/south/7000
+			} { \SegmentLabel{\id}{\dir}{\value} }
+
+			\node at ($ (mem.south) - (0, .5cm) $) [header] {\lPhysicalMemory};
+		\end{scope}
+
+		\begin{scope}[name=segment table, on background layer, shift={($(mem.west) - (5,0)$)}]
+			\path (0, 0) coordinate (h);
+			\foreach \limit/\base [count=\i from 0] in { 1000/500, 500/6500, 500/3800, 2000/1800, 1500/4300 } {
+				\TableRow{\i}
+			}
+
+			\node (table header limit) at (table limit 0.north) [table header] {\lLimit};
+			\node (table header base) at (table base 0.north) [table header] {\lBase};
+			\node (table label) at ($ (table limit 4.south west)!.5!(table base 4.south east) - (0, .5) $) [header] {\lSegmentTable};
+		\end{scope}
+	\end{scope}
+
+	\begin{scope}[name=address]
+		\node (addr segment) at ($(logical address space.north)+(4,1)$) [address seg] {\lSegmentNumber};
+		\node (addr offset) at (addr segment.east) [address offset] {\lOffset};
+		\node (addr label)  at (addr segment.west) [address label]  {\lLogicalAddress :};
+		\begin{scope}[on background layer]
+			\node [address box, fit=(addr segment)(addr offset)(addr label)] {};
+		\end{scope}
+	\end{scope}
+
+	\begin{scope}[name=arrows]
+		\draw[line to table] (seg 0.base) -- (table label 0.west);
+		\draw[line to memory] ($ (table base 0.base) + (0, 3pt) $) |- ($ (seg 0 mem.north west) - (10pt, 0) $);
+		\draw[brace mirror, themeOrange]  ($ (seg 0 mem.north west) -(4pt, 0pt) $) -- node (x) [midway] {} ($ (seg 0 mem.south west) -(4pt, 0pt) $);
+		\draw[line to memory] ($ (table limit 0.base) + (0, 3pt) $) |- ($ (x) - (6pt, 0) $);
+	\end{scope}	
+	\end{tikzpicture}
+\end{document}
