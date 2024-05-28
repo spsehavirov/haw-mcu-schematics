@@ -22,6 +22,7 @@
 
 ## Segmentace
 
+![Segmentace - schéma](dist/png/mem_segmentation_scope_flat.png)
 ![Segmentace](dist/png/mem_segmentation_hw_flat.png)
 
 ## Segmentace se stránkování
