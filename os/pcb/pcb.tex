@@ -1,0 +1,76 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lPointer}{Ukazatel}
+	\newcommand{\lState}{Stav\\procesu}
+	\newcommand{\lProcessNumber}{Číslo procesu}
+	\newcommand{\lProgramCounter}{Čítač instrukcí}
+	\newcommand{\lRegisters}{Registry}
+	\newcommand{\lMemoryLimit}{Limity paměti}
+	\newcommand{\lOpenFiles}{Seznam otevřených souborů}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		block/.style n args={2}{minimum height=1cm, draw, align=center, font=\scriptsize, inner sep=0, outer sep=0, minimum width=#1cm, minimum height=#2cm},
+		block half/.style={block={2}{1}},
+		block full/.style={block={4}{.5}},
+		block full 2x/.style={block={4}{1.5}}
+	]
+	\node (pointer) [block half] { \lPointer };
+	\node (state) at (pointer.east) [block half, anchor=west] { \lState };
+	\node (id) at (pointer.south west) [block full, anchor=north west] { \lProcessNumber };
+	\node (pc) at (id.south) [block full, anchor=north] { \lProgramCounter };
+	\node (reg) at (pc.south) [block full 2x, anchor=north] { \lRegisters };
+	\node (mem) at (reg.south) [block full, anchor=north] { \lMemoryLimit };
+	\node (files) at (mem.south) [block full, anchor=north] { \lOpenFiles };
+	\node (other) at (files.south) [block full 2x, anchor=north] { \vdots };
+	
+		
+	\end{tikzpicture}
+\end{document}
