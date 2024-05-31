@@ -1,0 +1,111 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lSave}{Ulož PCB}
+	\newcommand{\lLoad}{Načti PCB}
+	\newcommand{\lCPU}{CPU}
+	\newcommand{\lOS}{Operační systém}
+	\newcommand{\lInterrupt}{Přerušení nebo systémové volání}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		element/.style={draw, rounded corners=4pt, minimum width=3.5cm, minimum height=1cm},
+		arrow/.style={draw, single arrow, single arrow head extend=3pt},
+		process 1 arrow/.style={-{Triangle[scale=.5]}, line width=4pt, themeOrange!90},
+		process 2 arrow/.style={process 1 arrow, themeBlue!90},
+		process idle/.style={themeGrey, dotted, semithick},
+		line to node/.style={-latex, themeGrey!75, shorten <= 4pt, shorten >= 2pt},
+		line from node/.style={-latex, themeGrey!75, shorten <= 2pt, shorten >= 4pt},
+		connect nodes/.style={-{Latex[scale=.6]}, themeGrey!75},
+		block/.style={minimum width=2.5cm, draw, font=\scriptsize}
+	]
+	
+	\begin{scope}[name=p1]
+		\draw[process 1 arrow] (0,0) coordinate (p1 run 1 start) -- ++(down:2cm) coordinate (p1 run 1 end);
+		\draw[process idle, shorten <= 2pt, shorten >= 2pt] (p1 run 1 end) coordinate (p1 idle start) -- ++(down:4cm) coordinate (p1 idle end);
+		\draw[process 1 arrow] (p1 idle end) coordinate (p1 run 2 start) -- ++(down:2cm) coordinate (p1 run 2 end);
+	\end{scope}
+	
+	\begin{scope}[name=p2, xshift=10cm]
+		\coordinate (o) at (0,0);
+		\draw[process idle, shorten >= 2pt] (p1 run 1 start-|o) coordinate (p2 idle 1 start) -- (p1 run 1 end-|o) -- ++(down:.6) coordinate (p2 idle 1 end);
+		\draw[process 2 arrow] (p2 idle 1 end) coordinate (p2 run 1 start) -- ($ (p1 idle end-|o) +(0,.6) $) coordinate (p2 run 1 end);
+		\draw[process idle, shorten <= 2pt] (p2 run 1 end) coordinate (p2 idle 2 start) -- (p1 run 2 end-|o) coordinate (p2 idle 2 end);
+	\end{scope}
+	
+	\begin{scope}[name=cpu]
+		\node (pcb 0 save) at ($ (p1 run 1 end)!.5!(p1 run 1 end-|o) $) [block, fill=themeOrange!10] { \lSave\space \texttt{0} };
+		\node (pcb 1 load) at (pcb 0 save|-p2 run 1 start) [block, fill=themeBlue!10] { \lLoad\space \texttt{1} };
+	
+		\node (pcb 1 save) at ($ (p2 run 1 end)!.5!(p2 run 1 end-|p1 idle start) $) [block, fill=themeBlue!10] { \lSave\space \texttt{1} };
+		\node (pcb 0 load) at (pcb 1 save|-p1 run 2 start) [block, fill=themeOrange!10] { \lLoad\space \texttt{0} };
+	
+		\draw[line to node] (p1 run 1 end) -- (pcb 0 save);
+		\draw[line from node] (pcb 1 load) -- (p2 run 1 start);
+		\draw[connect nodes] (pcb 0 save) -- (pcb 1 load);
+	
+		\draw[line to node] (p2 run 1 end) -- (pcb 1 save);
+		\draw[line from node] (pcb 0 load) -- (p1 run 2 start);
+		\draw[connect nodes] (pcb 1 save) -- (pcb 0 load);
+	\end{scope}
+	
+	\begin{scope}[name=labels]
+		\draw (p1 run 1 start) ++(up:.5) node [font=\bfseries] (p1 label) {$ \text{P}_{\text{\texttt{0}}} $};
+		\draw (p2 idle 1 start) ++(up:.5) node [font=\bfseries] (p2 label) {$ \text{P}_{\text{\texttt{1}}} $};
+		\draw (p1 label-|pcb 0 save) node [font=\footnotesize\bfseries] (cpu label) {\lCPU};
+		\node at ($ (pcb 1 load.south)!.5!(pcb 1 save.north) $) [themeTeal, font=\scriptsize] { \lInterrupt };
+	\end{scope}
+	
+	\begin{scope}[on background layer]
+		\node (os frame) [fit=(p1 label)(cpu label)(p2 label), fill=yellow!15, outer sep=0, inner sep=0] {};
+		\node (os label) at (os frame.north) [above, font=\scriptsize] { \lOS };
+	\end{scope}
+		
+	\end{tikzpicture}
+\end{document}
