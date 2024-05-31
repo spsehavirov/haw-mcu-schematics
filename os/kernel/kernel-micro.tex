@@ -1,0 +1,75 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lKernel}{Jádro}
+	\newcommand{\lSoftware}{Software}
+	\newcommand{\lServers}{Servery}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		block/.style n args={2}{draw, align=center, font=\scriptsize, inner sep=0, outer sep=0, minimum width=#1cm, minimum height=#2cm, rounded corners=2pt},
+		block full/.style={block={3.5}{1}},
+		block half/.style={block={1.5}{1}},
+		block square/.style={block={1}{.7}},
+		arrow/.style={draw, single arrow, single arrow head extend=2pt},
+		arrow full/.style={draw, double arrow, double arrow head extend=2pt},
+	]
+	
+	\node (kernel) [block full, fill=themeBlue!10] {\lKernel};
+	\node (server) at ($ (kernel.south west) - (0, .5cm) $) [block half, anchor=north west, fill=themeGrey!5] {\lServers};
+	\node (software) at ($ (kernel.south east) - (0, .5cm) $) [block half, anchor=north east, fill=themeOrange!10] {\lSoftware};
+	%\node (servers) at ($(kernel.center) - (3.25em, 0) $) [block square, anchor=center, fill=white] {\lServers};
+	
+	\node (a 2) at ($ (server.north west)!.7!(server.north east) $) [arrow, anchor=tail, minimum width=15pt, minimum height=.65cm, fill=white, rotate=90, xshift=-.5\pgflinewidth] {};
+	\node (a 1) at ($ (kernel.south west)!.12!(kernel.south east) $) [arrow, anchor=tail, minimum width=15pt, minimum height=.65cm, fill=white, rotate=-90, xshift=-.5\pgflinewidth] {};
+	\node (a 3) at ($ (server.east) - (.1cm,0) $) [arrow full, anchor=west, minimum width=10pt, minimum height=.7cm, fill=white] {};
+	
+	\draw[{Latex[scale=.5]}-{Latex[scale=.5]}, densely dotted, shorten <= 1pt, shorten >= 5pt] ($ (kernel.south west)!.5!(kernel.south east) $) -- node[pos=.45, xshift=3pt, align=center, rotate=-90, font=\scriptsize] {$ {}_{\text{IPC}}$} ($ (software.west)!.5!(server.east)  $);
+	\end{tikzpicture}
+\end{document}

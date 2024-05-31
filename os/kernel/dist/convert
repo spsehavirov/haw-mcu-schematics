@@ -1,0 +1,7 @@
+mkdir -p png svg pdf
+for n in $(ls -xH *.pdf); do 
+    pdftocairo $n "png/${n%.*}_flat" -singlefile -png -r 1200;
+    pdftocairo $n "png/${n%.*}" -singlefile -transp -png -r 1200;
+    pdftocairo $n "svg/${n%.*}.svg" -svg;
+    mv $n pdf/ 
+done
