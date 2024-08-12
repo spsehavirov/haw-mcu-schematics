@@ -16,3 +16,6 @@
 ![High](dist/png/adc_convert_stairs__high_flat.png)
 ![Low](dist/png/adc_convert_stairs__low_flat.png)
 
+# Sledovací AD
+
+![Sledovací AD](dist/png/adc_compensation_tracing_flat.png)
