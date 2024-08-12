@@ -1,0 +1,105 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+    \newcommand{\lCounter}{Vratný čítač}
+    \newcommand{\lDA}{D/A převodník}
+    \newcommand{\lUp}{vpřed}
+    \newcommand{\lDown}{vzad}
+}
+
+\usetikzlibrary{
+    hobby,
+    babel,
+    intersections,
+    spath3,
+    shapes.arrows,
+    shapes.geometric,
+    shapes.symbols,
+    fit,
+    backgrounds, 
+    calc,
+    tikzmark,
+    decorations.pathreplacing,
+    angles,
+    arrows.meta,
+    quotes,
+    positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\ctikzset {
+    logic ports=european,
+    logic ports/scale=.7,
+    tripoles/european not symbol=ieee circle,
+    resistors/scale=0.7,
+    capacitors/scale=0.6,
+    diodes/scale=0.6,
+    amplifiers/scale=0.8,
+}
+
+\begin{document}
+\begin{tikzpicture}[
+	european,
+    straight voltages,
+    bus/.style={single arrow, single arrow head extend=2pt},
+    box/.style={draw, thick,  inner sep=0, outer sep=0, minimum width=3.5cm, minimum height=2cm},
+    generator/.style={draw, thick,  inner sep=0, outer sep=0, minimum size=1.5cm},
+    label/.style={font=\scriptsize},
+]
+
+\draw (0,0) node [box] [label] (counter) {\lCounter};
+\draw (counter.south) ++(0, -3) node [draw] [label, box]  (da) {\lDA};
+
+\draw [-latex] ($ (counter.south west)!.1!(counter.south east) $) -- ++(0, -0.25) coordinate (cnt2da 0) -> ($ (da.north west)!.1!(da.north east) $);
+\draw [-latex] ($ (counter.south west)!.2!(counter.south east) $) -- ++(0, -0.50) coordinate (cnt2da 1) -> ($ (da.north west)!.2!(da.north east) $);
+\draw [-latex] ($ (counter.south west)!.8!(counter.south east) $) -- ++(0, -1.35) coordinate (cnt2da 2) -> ($ (da.north west)!.8!(da.north east) $);
+\draw [-latex] ($ (counter.south west)!.9!(counter.south east) $) -- ++(0, -1.60) coordinate (cnt2da 3) -> ($ (da.north west)!.9!(da.north east) $);
+
+\draw (cnt2da 0) to [short, *-o] ++(4, 0) coordinate (j0) node [right, label] {$ b_0 $};
+\draw (cnt2da 1) to [short, *-o] (\tikztostart-|j0) coordinate (j1) node [right, label] {$ b_1 $};
+\draw (cnt2da 2) to [short, *-o] (\tikztostart-|j0) coordinate (j2) node [right, label] {$ b_{n - 1} $};
+\draw (cnt2da 3) to [short, *-o] (\tikztostart-|j0) coordinate (j3) node [right, label] {$ b_n $};
+
+\draw ($ (j1)!.5!(j2) $) ++(-.5, .02) node [anchor=center] {\rotatebox{90}{$\cdots$}};
+\draw ($ (cnt2da 1)!.5!(cnt2da 2) $)  node [anchor=center] {$ \ldots $};
+
+\draw ($ (counter.north west)!.25!(counter.north east) $) ++(0, .25) node [and port, rotate=-90] (and 1) {};
+\draw [-latex] (and 1.out) to (\tikztostart|-counter.north);
+
+\draw ($ (counter.north west)!.75!(counter.north east) $) ++(0, .25) node [and port, rotate=-90] (and 2) {};
+\draw [-latex] (and 2.out) to (\tikztostart|-counter.north);
+
+\draw (and 1.in 1) to[short, -*] (and 2.in 1) |- ++(1.5, .75) node [generator, anchor=west] {G};
+
+\draw ($ (and 2.in 2)!.5!(and 1.in 1) $) ++ (0, .75) node[ieeestd not port, anchor=center] (not) {};
+\draw (not.out) -| (and 2.in 2);
+\draw (and 1.in 2) to[short, -*] ++(0, .75) coordinate (j_comp) -- (not.in);
+\draw (j_comp) -- ++(-.5, 0) node [op amp, noinv input up, anchor=out] (comp) {};
+
+\draw (comp.-) -- node[midway, above, label] {$ U_{DA} $} ++(-.5, 0) to[short, f<_=$I_k$] (da-|\tikztostart) -- (da.west);
+\draw (comp.+) -- ++(-.5, 0) to[R=$R$] ++(-1, 0) to[short, i_<=$I_A$] ++(-1, 0) to[short, -o] ++(0,0) node [left] {$ U_A $};
+
+\draw (and 1.south) node [left, label] { \lUp };
+\draw (and 2.north) node [right, label] { \lDown };
+
+\end{tikzpicture}
+\end{document}
