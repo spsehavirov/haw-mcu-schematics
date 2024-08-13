@@ -1,0 +1,86 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+    \newcommand{\lControlLogic}{Řídící logika}
+    \newcommand{\lComparatorLabel}{KOMP}
+    \newcommand{\lCounter}{Čítač\\s nulováním}
+    \newcommand{\lMem}{Paměť\\n-bitů}
+    \newcommand{\lOutput}{Výstup\\n-bitů}
+}
+
+\usetikzlibrary{
+    babel,
+    intersections,
+    calc,
+    arrows.meta,
+    shapes.arrows,
+    tikzmark,
+}
+
+\ctikzset {
+    logic ports=european,
+    voltage shift=0.5,
+    resistors/scale=0.7,
+    capacitors/scale=0.6,
+    amplifiers/scale=0.8,
+}
+
+\begin{document}
+\begin{tikzpicture}[
+	european, straight voltages,
+    box/.style={draw, thick, inner sep=0, outer sep=0, minimum width=3cm, minimum height=1.5cm, font=\footnotesize, align=center, },
+    ctrl/.style={box},
+    counter/.style={box, minimum width=2cm},
+    mem/.style={box, minimum width=2cm, anchor=north},
+    bus/.style={draw, single arrow, single arrow head extend=2pt, minimum height=.5cm, rotate=-90, anchor=tail},
+    label/.style={font=\scriptsize},
+    connector/.style={-latex},
+    signal/.style={latex-},
+    output/.style={anchor=north, text width=2cm, align=center, font=\footnotesize},
+    comp/.style={op amp, noinv input up, font=\scriptsize},
+]
+
+\draw (0, 0) node [spdt, rotate=180, yscale=-1] (sw) {};
+\draw (sw.out 2) -- ++(left:.05) to[dcvsource, v_<=$\text{U}_{\text{REF}}$] ++(down:2) node [rground] (gnd ref) {};
+\draw (sw.out 1) -- ++(left:2) -- ++(down:1) to[open, v=$\text{U}_{\text{x}}$, voltage=straight, o-o] ++(down:1.25) to (\tikztostart|-gnd ref) node [rground] {};
+
+\draw (sw.in) to[short, R=$\text{R}$, -*] ++(right:1.5) coordinate (x) to[short] ++(right:.5) node [op amp, anchor=-] (op 1) {};
+\draw (op 1.+) -- ++(left:.50) to (\tikztostart|-gnd ref) node [rground] {};
+\draw (op 1.out) to[short, -*] ++(right:.25) coordinate (y) to [short] ++(right:.25) node [comp, anchor=+] (op 2) {\lComparatorLabel};
+\draw (op 2.-) -- ++(left:.25) to (\tikztostart|-gnd ref) node [rground] {};
+
+\draw (x) to[short, -*] ++(up:1) coordinate (j0) to[short, C=$\text{C}$, -*] (y|-\tikztostart) coordinate (j1) -- (y);
+\draw (j1) -- ++(0, 1) to[normal open switch, mirror, name=s] (\tikztostart-|j0) -- (j0);
+
+\draw [signal] (s.mid) -- ++(up:1) -- ++(right:3) node [ctrl, anchor=west] (ctrl) {\lControlLogic};
+\draw [signal] (sw.mid) to (\tikztostart|-ctrl.north west) -- ++(up:.5) -| ($ (ctrl.north west)!0.3!(ctrl.north east) $);
+\draw [connector] (op 2.out) -| ($ (ctrl.south west)!0.3!(ctrl.south east) $);
+\draw [signal] ($ (ctrl.south west)!0.7!(ctrl.south east) $) |- ++(4, -1) node [counter, anchor=west] (counter) {\lCounter};
+
+\node [bus] at (counter.south)  (arrow to mem) {};
+\node [mem] at (arrow to mem.tip) (mem) {\lMem};
+\node [bus] at (mem.south) (arrow to out) {};
+\node [output] at (arrow to out.tip) (out) {\lOutput};
+
+\draw [connector] ($ (ctrl.north west)!0.7!(ctrl.north east) $) -- ++(up:.5) -| ($ (counter.north west)!0.7!(counter.north east) $);
+\draw [connector] (ctrl.east) -- ++(right:1.25) node [and port, anchor=bin 1] (and) {};
+\draw (and.out) -| ($ (counter.north west)!0.3!(counter.north east) $);
+\draw (and.in 2) to ($ (\tikztostart|-gnd ref) + (0, 4) $) to[sqV] (\tikztostart|-gnd ref) node [rground] {};
+
+\end{tikzpicture}
+\end{document}
