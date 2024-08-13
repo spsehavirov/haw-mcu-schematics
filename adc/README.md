@@ -23,3 +23,7 @@
 # Aproximační AD
 
 ![Aproximační AD](dist/png/adc_compensation_sar_flat.png)
+
+# AD s dvojtou integrací
+
+![Aproximační AD](dist/png/adc_double_integration_flat.png)
