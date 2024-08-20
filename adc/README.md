@@ -24,6 +24,8 @@
 # Aproximační AD
 
 ![Aproximační AD](dist/png/adc_compensation_sar_flat.png)
+![Aproximační AD - graf L](dist/png/adc_compensation_sar_graph_low_flat.png)
+![Aproximační AD - graf H](dist/png/adc_compensation_sar_graph_high_flat.png)
 
 # AD s dvojtou integrací
 
