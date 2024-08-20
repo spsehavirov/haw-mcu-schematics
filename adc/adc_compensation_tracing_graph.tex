@@ -54,6 +54,11 @@
 	dim seg/.style = {ultra thin, color=black},
 ]
 
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
 \begin{axis}[
 	no markers,
     enlargelimits=false, clip=false, axis on top,
@@ -76,7 +81,7 @@
         create col/expr={\pgfmathaccuma + \thisrow{shift}}   
     }
 ]
-\addplot [cyan, smooth] table [y=cumulative distribution] {
+\addplot [themeBlue, smooth] table [y=cumulative distribution] {
 x	shift
 0	2.1
 1	-.05
@@ -102,7 +107,7 @@ x	shift
 21	.25
 };
 
-\addplot [gray] table [y=cumulative distribution] {
+\addplot [themeGrey] table [y=cumulative distribution] {
 x shift
 0 2
 1 .25
@@ -143,7 +148,7 @@ x shift
 \addplot [dim seg] (9.47, 2.5) -- (9.47, 2.75) node[below, rotate=-90, anchor=west, sloped, pos = .5, font=\scriptsize] {$ \text{u}_{\text{LSB}} $};
 
 \addplot [helper line] coordinates {(14, .99) (14, 2.7)};
-\addplot [helper line] coordinates {(17, .99) (17, 1.65)};
+\addplot [helper line] coordinates {(17, .99) (17, 1.6)};
 \addplot [dim line] (15.5, 1) -- (17, 1);
 \addplot [dim line] (15.5, 1) -- (14, 1) node[below, sloped, pos = 0, font=\scriptsize] {příliš strmý signal};
 
