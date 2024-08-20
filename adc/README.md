@@ -19,6 +19,7 @@
 # Sledovací AD
 
 ![Sledovací AD](dist/png/adc_compensation_tracing_flat.png)
+![Sledovací AD - graf](dist/png/adc_compensation_tracing_graph_flat.png)
 
 # Aproximační AD
 
