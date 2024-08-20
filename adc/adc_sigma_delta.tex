@@ -1,0 +1,84 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{helvet}
+\usepackage{circuitikz}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\usepackage{amsmath}
+\usepackage{mathpazo}
+\usepackage{circuitikz}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+    \newcommand{\lIntegrator}{Integrátor}
+    \newcommand{\lSignalInput}{Vstup signálu}
+    \newcommand{\lComparator}{Komparátor\\(1-bit ADC)}
+    \newcommand{\lToDigitalFilter}{Do digitálního\\filtru}
+    \newcommand{\lDiffAmp}{Diferenciální\\zes.}
+    \newcommand{\lDAC}{(1-bit DAC)}
+}
+
+\newcommand{\BigInt}{\fontsize{20}{25}\selectfont $\int$}
+
+\usetikzlibrary{babel, intersections, calc, shapes, quotes, positioning}
+
+\begin{document}
+\begin{circuitikz}[
+	integrator/.style={
+		muxdemux, 
+		muxdemux def={NL=1, NR=1, NB=0, Lh=3.75, Rh=0},
+		font=\fontsize{20}{25}\selectfont
+	},
+	amp/.style={op amp, noinv input up, },
+	amp desc/.style={anchor=base, text width=2cm, align=center},
+	dac box/.style={draw, thick, signal, minimum width=3.25cm, minimum height=2.1cm},
+]
+	% Integrator
+	\node [integrator] (int) at (0,0) {};
+	\node at ($ (int.center) - (0.3, 0) $) {\BigInt};
+	\node [amp desc] at ($ (int.center) - (0,1.5) $) {\lIntegrator};
+	\node [above] at (int.east) {$ \text{X}_{\text{3}} $};
+	
+	% Diff amp
+	\node [amp, anchor=out] (diff) at ($ (int.west) - (2,0) $) {};
+	\node [above] at (diff.+) {$ \text{X}_{\text{1}} $};
+	\node [above] at (diff.bout) {$ \text{X}_{\text{2}} $};
+	\node [amp desc] at ($ (diff.center) - (0,1.5) $) {\lDiffAmp};
+	\draw (diff.out) -- (int.west);
+	\draw (diff.+) to[short, -o] ++(left:2) node [above] {\lSignalInput};
+
+	% Comparator
+	\node [amp, anchor=+] (comp) at ($ (int.east) + (2, 0) $) {};
+	\node [above] at (comp.bout) {$\text{X}_{\text{4}} $};
+	\node [amp desc] at ($ (comp.center) - (0, 1.5) $) {\lComparator};
+	\draw (comp.+) -- (int.east);
+	\draw (comp.-) -- ++(left:.5) -- ++(down:.75) node [rground] {};
+	\draw (comp.out) to[short, -*] 
+		++(right:1.0) coordinate (out) to[short, -o] 
+		++(right:1.5) node [above, align=center, text width=2.5cm] {\lToDigitalFilter}; % OUTPUT
+	
+	% DAC
+	\node [name=s1, dac box, xscale=-1] (dac) at ($ (int.south) - (0, 2.5) $)  {};
+	\node [amp desc] at ($ (dac.center) - (0,1.5) $) {\lDAC};
+	\node [tground] (dac +) at ($ (dac.north) - (0, .25) $) {};
+	\node [tground] (dac -) at ($ (dac.south) + (0, .25) $) {};
+	
+	\draw (dac +) to[short, -o, thick] ++(down:.25cm) coordinate (+);
+	\draw (dac -) to[short, -o, thick] ++(up:.25cm) coordinate (-);
+	
+	\draw (diff.-) 
+		-- ++(left:.5) to (\tikztostart|-dac.east) 
+		-- (dac.east) node[midway, above] {$ \text{X}_{\text{5}} $};
+	\draw (dac.east) -- ++(right:1.25) [shorten >=1.5pt, -latex] -- (+);
+	\draw (out) to (\tikztostart|-dac.west) -- (dac.west);
+\end{circuitikz}
+
+\end{document}
