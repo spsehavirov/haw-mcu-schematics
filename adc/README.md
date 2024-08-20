@@ -27,3 +27,7 @@
 # AD s dvojtou integrací
 
 ![Aproximační AD](dist/png/adc_double_integration_flat.png)
+
+# AD Sigma-delta
+
+![Sigma-delta AD](dist/png/adc_sigma_delta_flat.png)
