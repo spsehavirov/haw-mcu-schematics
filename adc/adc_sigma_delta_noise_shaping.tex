@@ -1,0 +1,97 @@
+\documentclass[tikz,margin=10pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{pgfplots, pgfplotstable}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{babel, calc}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcommand{\lDomainMax}{9}
+
+\iflanguage{czech}{
+    \newcommand{\lHFNoiseRemoved}{Vysokofrekvenční šum\\odstraněný digitálním filtrem}
+    \newcommand{\lFilterFeedback}{Odezva digitálního filtru}
+    \newcommand{\lSignalAmplitude}{Amplituda signálu}
+    \newcommand{\lPower}{Výkon}
+}
+
+\makeatletter
+\long\def\ifnodedefined#1#2#3{%
+    \@ifundefined{pgf@sh@ns@#1}{#3}{#2}%
+}
+\makeatother
+
+\newcommand{\point}[1]{(#1, {abs(((e^(#1-2))/(4+((e^(#1-2))/3))) + 0.05*(3*rand))})}
+
+\newcommand{\generatepoints}[1]{%
+    \foreach \x in {0, 0.1, ..., \lDomainMax} {%
+        \xdef#1{#1 \point{\x}}%
+    }%
+}
+
+\newcommand{\samples}{}
+\generatepoints{\samples}
+
+\begin{document}
+
+\pgfplotsset{
+    samples/.style={ybar, bar width=1sp, themeBlue, clip=true, axis on top},
+    envelope/.style={smooth, densely dotted, themeOrange},
+    fence/.style={thin, dashed, black},
+    discontinuous/.style={const plot, mark=none}
+}
+
+\begin{tikzpicture} [
+	left label/.style={black, left, align=right, font=\scriptsize},
+	right label/.style={black, right, align=left, font=\scriptsize},
+]
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\begin{axis}[
+	width=12cm,
+	height=8cm,
+	no markers, enlargelimits=false, clip mode=individual, axis on top,
+    axis lines*=middle, axis line style = thick,
+    tick align=center, hide obscured y ticks=false,
+    xtick=\empty, ytick=\empty,
+    xtick={8.9, 17.8},
+    xticklabels={$\frac{kF_s}{2}$, $kF_s$},
+	legend style={draw=none},
+    jump mark left,
+    ymin=-.15,ymax=7,
+    xmin=-.25, xmax=20,
+	ylabel style={rotate=-90},
+    every axis plot/.style={thick},
+    every tick label/.append style={font=\tiny},
+    discontinuous,
+    table/create on use/cumulative distribution/.style={
+        create col/expr={\pgfmathaccuma + \thisrow{shift}}   
+    }
+]
+
+
+\addplot [samples, opacity=0.5] plot coordinates { \samples };
+\addplot [samples] plot coordinates { (1.5, 6) };
+
+\addplot [envelope, domain=0:\lDomainMax] {(e^(x-2))/(4+((e^(x-2))/3)};
+\addplot [fence] plot coordinates { (0, 6.25) (2.5, 6.25) (2.5, 0) };
+
+\node [right label] at (axis cs:9,3) { \lHFNoiseRemoved };
+\node [right label] at (axis cs:2.5,4) { \lFilterFeedback };
+\node [right label] at (axis cs:2.5,6) { \lSignalAmplitude };
+\node  [left label] at (axis cs:0,5.5) { \lPower };
+
+\end{axis}
+\end{tikzpicture}
+\end{document}

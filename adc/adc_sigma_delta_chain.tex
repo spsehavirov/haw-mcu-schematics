@@ -1,0 +1,42 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\iflanguage{czech}{
+    \newcommand{\lModulator}{Modulátor\\Sigma-delta}
+    \newcommand{\lLowPass}{Digitální\\nízkopásmový\\filtr}
+    \newcommand{\lDecimator}{Decimační\\filtr}
+    \newcommand{\lOutput}{Výstupní\\data}
+    \newcommand{\lInput}{Analogový\\vstup}
+    \newcommand{\lOneBit}{1-bitový\\datový proud}
+    \newcommand{\lMultiBit}{multibitová\\data}
+}
+
+\usetikzlibrary{babel, calc, arrows.meta, positioning}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    box/.style={draw, minimum width=3cm, minimum height=1.75cm, align=center},
+    input label/.style={align=right, text width=1.25cm, anchor=east},
+    output label/.style={align=left, text width=1.25cm, anchor=west},
+    flow inspect/.style={above, align=center},
+]
+
+\node (mod) [box] {\lModulator};
+\node (filter) [box, right=1.5cm of mod] {\lLowPass};
+\node (decimator) [box, right=1.5cm of filter] {\lDecimator};
+
+\draw (mod.west) -- ++(-1.5,0) node [input label] {\lInput};
+\draw (decimator.east) -- ++(1.5,0) node [output label] {\lOutput};
+\draw (mod.east) -- (filter.west);
+\draw (filter.east) -- (decimator.west);
+
+\draw [-latex] ($ (mod.east)!.5!(filter.west) + (0, 1.25) $) node [flow inspect] {\lOneBit} -- ++(down:1);
+\draw [-latex] ($ (filter.east)!.5!(decimator.west) + (0, 1.25) $) node [flow inspect] {\lMultiBit} -- ++(down:1);
+
+\end{tikzpicture}
+\end{document}
