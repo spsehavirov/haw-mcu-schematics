@@ -34,3 +34,5 @@
 # AD Sigma-delta
 
 ![Sigma-delta AD](dist/png/adc_sigma_delta_flat.png)
+![Sigma-delta AD - process](dist/png/adc_sigma_delta_chain_flat.png)
+![Sigma-delta AD - noise shaping](dist/png/adc_sigma_delta_noise_shaping_flat.png)
