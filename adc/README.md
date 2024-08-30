@@ -30,6 +30,7 @@
 # AD s dvojtou integrací
 
 ![Aproximační AD](dist/png/adc_double_integration_flat.png)
+![Aproximační AD - graph](dist/png/adc_double_integration_graph_flat.png)
 
 # AD Sigma-delta
 
