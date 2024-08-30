@@ -1,0 +1,69 @@
+\documentclass[tikz,margin=10pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{pgfplots, pgfplotstable}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{babel, calc}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\iflanguage{czech}{}
+
+\begin{document}
+
+\pgfplotsset{
+    samples/.style={ybar, bar width=1sp, themeBlue, clip=true, axis on top},
+    envelope/.style={smooth, densely dotted, themeOrange},
+    fence/.style={thin, dashed, black},
+    discontinuous/.style={const plot, mark=none}
+}
+
+\begin{tikzpicture} [
+	Ui 1/.style={sharp plot, themeOrange},
+	Ui 2/.style={sharp plot, themeBlue},
+	guide/.style={thin, dashed, themeGrey},
+	dim line/.style={latex-latex, shorten >=1, shorten <=1},
+	dim label/.style={midway, below},
+]
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\begin{axis}[
+	width=13cm,
+	height=7.5cm,
+	ymin=-.15, ymax=7,
+    xmin=-.25, xmax=20,
+	no markers, enlargelimits=false, clip=false, 
+	axis on top, axis lines*=middle, axis line style = {semithick, -latex},
+    xtick=\empty, ytick=\empty,
+    every axis plot/.style={thick},
+    discontinuous
+]
+\node at ($ (axis description cs:0,1) - (2mm, 1mm) $) {$ \text{U}_i $};
+\node at ($ (axis description cs:0,0) - (1mm, 1mm) $) {0};
+\node at ($ (axis description cs:1,0) - (1mm, 1mm) $) {$ t $};
+
+\addplot [Ui 1] plot coordinates { (0, 0) (12, 5) (18, 0) } node [pos=0.429, above] {$ {\text{U}_i}^2 $};
+\addplot [Ui 2] plot coordinates { (0, 0) (12, 3) (15.5, 0) } node [pos=0.50, above] {$ {\text{U}_i}^1 $};
+
+\addplot [guide] plot coordinates { (12, -1.6) (12, 5) };
+\addplot [guide] plot coordinates { (15.5, -.6) (15.5, 0) };
+\addplot [guide] plot coordinates { (18, -1.6) (18, 0) };
+\addplot [guide] plot coordinates { (0, -.6) (0, -.25) };
+
+\draw [dim line, themeGrey] (0, -.5) -- (12, -.5) node[dim label, gray] {$ \text{T}_x = \text{konst.} $};
+\draw [dim line, themeBlue] (12, -.5) -- (15.5, -.5) node[dim label] {$ {\text{T}_{vyb}}_1 $};
+\draw [dim line, themeOrange] (12, -1.5) -- (18, -1.5) node[dim label] {$ {\text{T}_{vyb}}_2 $};
+
+\end{axis}
+\end{tikzpicture}
+\end{document}
