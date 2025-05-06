@@ -1,0 +1,4 @@
+for step in {0..10}; do
+    pdflatex "\def\highlightstepvalue{$step} \input{dma.tex}"
+    mv dma.pdf dma_$step.pdf
+done

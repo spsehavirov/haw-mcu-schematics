@@ -1,0 +1,310 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lMainMemory}{Hlavní paměť}
+	\newcommand{\lCPU}{CPU}
+	\newcommand{\lCPURegisters}{registry}
+	\newcommand{\lBusData}{Datová sběrnice}
+	\newcommand{\lBusAddr}{Adresní sběrnice}
+	\newcommand{\lRegData}{Datový reg.}
+	\newcommand{\lRegStatus}{Stavový reg.}
+	\newcommand{\lRegControl}{řídicí reg.}
+	\newcommand{\lIODevice}{I/O Zařízení}
+    \newcommand{\lDMAController}{Řadič DMA}
+    \newcommand{\lIOInterface}{I/O rozhraní}
+    \newcommand{\lHOLD}{hold}
+    \newcommand{\lHLDA}{hlda}
+    \newcommand{\lEND}{end}
+    \newcommand{\lDREQ}{dreq}
+    \newcommand{\lDACK}{dack}
+    \newcommand{\lDMARegAddr}{Adresní reg.}
+    \newcommand{\lDMARegCount}{Počítací reg.}
+}
+
+\usetikzlibrary{
+	babel,
+	intersections,
+	calc,
+    shadows,
+    shadows.blur,
+	arrows.meta,
+	shapes.arrows,
+	tikzmark,
+    backgrounds,
+}
+
+\ctikzset {
+	logic ports=european,
+	voltage shift=0.5,
+	resistors/scale=0.7,
+	capacitors/scale=0.6,
+	amplifiers/scale=0.8,
+}
+
+\makeatletter
+% Helper macro to hold node content before uppercasing
+\newcommand{\tikz@text@content}{}
+\tikzset{
+	execute at begin node/.style={
+		execute at begin node=$\begingroup\let\tikz@text@content=,
+		execute at end node=\endgroup#1
+	}
+}
+\makeatother
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themePurple}{RGB}{130, 85, 175}
+\definecolor{themeGreen}{RGB}{145, 170, 75}
+
+\newcommand{\scripted}[2]{%
+	{\fontsize{#1}{#1}\selectfont\strut\MakeUppercase{#2}}%
+}
+
+\newcommand{\textoverline}[1]{\ensuremath{\overline{\text{#1}}}}
+
+\NewDocumentCommand{\connectionRight}{m m m m}{%
+    \coordinate (#3 conn) at ($ (#3.north west)!#4!(#3.south west) $);
+    \draw[#1] ($ (center|-#3 conn) + (#2, 0) $) to (#3 conn|-\tikztostart);
+}
+
+\NewDocumentCommand{\connectionLeft}{m m m m}{%
+    \coordinate (#3 conn) at ($ (#3.north east)!#4!(#3.south east) $);
+    \draw[#1] ($ (center|-#3 conn) + (#2, 0) $) to (#3 conn|-\tikztostart);
+}
+
+% STEP HIGHLIGHTER {+ automatisation in scripts}
+\newcounter{highlightstep}
+\ifdefined\highlightstepvalue
+    \setcounter{highlightstep}{\highlightstepvalue}
+\else
+    \setcounter{highlightstep}{0}
+\fi
+
+\begin{document}
+	\begin{tikzpicture}[
+		european, straight voltages,
+		% --- Base styles ---
+		block/.style={
+			draw=themeGrey,
+			thick,
+			align=center,
+			font=\footnotesize,
+		},
+		small block/.style={
+			block,
+			font=\scriptsize,
+		},
+		% --- Specific blocks ---
+		main memory/.style={
+			block,
+			minimum height=3cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+		},
+        dma/.style={
+            block,
+            draw=themeGreen,
+            text=themeGreen!70!black,
+            minimum height=3cm,
+            minimum width=1.735cm,%fix for text width adjustment
+            text width=1.25cm,
+            align=center,
+            anchor=north
+        },
+		cpu/.style={
+			block,
+			text=themeGrey,
+			minimum height=3.5cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+		},
+		cpu reg/.style={
+			small block,
+			text=themeGrey,
+			minimum height=1.25cm,
+			minimum width=1.5cm,
+			text width=1.25cm,
+			anchor=center,
+		},
+		cpu label/.style={
+			font=\footnotesize,
+			anchor=north,
+		},
+		io intf/.style={
+			block,
+			text=themeGrey,
+			minimum height=2cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+            anchor=north,
+		},
+		io iface reg/.style={
+			block,
+			font=\footnotesize,
+			minimum height=.35cm,
+			minimum width=1.25cm,
+			text width=1.25cm,
+		},
+		io dev/.style={
+			block,
+			font=\scriptsize,
+			minimum height=.75cm,
+			minimum width=2cm,
+		},
+        we label/.style={
+            rotate=90, font=\scriptsize, above, text=themeOrange,
+        },
+        bus/.style={
+            line width=2pt,
+        },
+        bus data/.style={
+            bus,
+            themeGrey
+        },
+        bus addr/.style={
+            bus,
+            themeBlue
+        },
+        bus we/.style={
+            line width=1pt,
+            themeOrange
+        },
+        bus data label/.style={
+            rotate=90, font=\scriptsize, above, align=right
+        },
+        bus addr label/.style={
+            themeTeal, rotate=90, font=\scriptsize, align=right, anchor=east, text=themeBlue, above
+        },
+        dma sig label/.style={
+            themeGreen, font=\scriptsize, above, align=right, anchor=south east, inner sep=0, xshift=-.5cm
+        },
+        dma sig label vertical/.style={
+            themeGreen, font=\scriptsize, above, align=center, anchor=south, inner sep=0, rotate=90
+        },
+        dma sig/.style={
+            bus we, themeGreen
+        },
+        dma reg/.style={
+            io iface reg, thin, draw=themeGreen, fill=white
+        },
+        >>/.style={
+            -{Triangle[length=5pt, width=5pt]}
+        },
+        <</.style={
+            {Triangle[length=5pt, width=5pt]}-
+        },
+        <<>>/.style={
+            {Triangle[length=5pt, width=5pt]}-{Triangle[length=5pt, width=5pt]}
+        },
+        highlight/.style args={#1}{
+            postaction={
+                draw=#1,
+                dotted,
+                line width=3pt
+            }
+        },
+        highlight if/.code args={#1}{
+            \ifnum#1=\value{highlightstep}
+            \tikzset{highlight=themePurple}%#2 -> if the color should change, add argument
+            \fi
+        },
+		]
+
+		\draw (0,0)                    node (mm)           [main memory]  {\scripted{7}{\lMainMemory}};
+   		\draw (mm)        ++(-5, -2.0) node (cpu)          [cpu]          {};
+		\draw (cpu.north) ++( 0, -0.5) node (cpu label)    [cpu label]    {\lCPU};
+		\draw (mm.south)  ++( 0, -1.0) node (io intf)      [io intf]      {};
+
+        \draw (io intf.south) ++(0, -1.25) node (dma)       [dma]          {\scripted{7}{\lDMAController}};
+
+		% IO Interfaces (registers)
+     	\draw (io intf.center)         node (reg data)     [io iface reg, highlight if={7}] { \scripted{4}{\lRegData} };
+		\draw (reg data)  ++(0, -.55)  node (reg status)   [io iface reg] { \scripted{4}{\lRegStatus} };
+		\draw (reg data)  ++(0,  .55)  node (reg control)  [io iface reg] { \scripted{4}{\lRegControl} };
+		% CPU (registers)
+		\draw (cpu.center)             node                [cpu reg]      { \scripted{5}{\lCPURegisters} };
+
+        \draw (io intf.north) node[above, anchor=south, inner sep=0] {\scripted{5}{\lIOInterface}};
+
+        %   Center-point to calculate possitions from
+        \coordinate (center) at ($ (cpu.east|-mm.west)!.5!(mm.west|-cpu.east) $);
+
+		%	WE# lines
+		\coordinate (io we) at ($ (io intf.north west)!.3!(io intf.south west) $);
+        \coordinate (dma we) at ($ (dma.north west)!.1!(dma.south west) $);
+
+		\coordinate (mm we) at ($ (mm.south west)!.3!(mm.north west) $);
+		\draw[bus we, <<>>, highlight if={4}] (mm we) -- ++(-.75, 0)                        coordinate (mm we offset)
+                       to (dma we-|\tikztostart)                          coordinate (dma we offset)
+                       to (dma we);
+
+		\coordinate (we label pos) at ($ (mm we offset)!.4!(dma we offset) $);
+		\node [we label] at (we label pos) {\textoverline{WE}};
+
+        % 	Data lines
+		\draw[bus data] (center|-mm.north) ++(-.25, .25)                  coordinate (data line top)
+                     to ($ (\tikztostart|-io intf.south) - (0, .25) $)    coordinate (data line bot);
+
+		\node[bus data label] at (data line top) {\scripted{6}{\lBusData}};
+
+        \connectionLeft{bus data, <<>>}{-.25}{cpu}{.5};
+        \connectionRight{bus data, <<>>, highlight if={5}}{-.25}{mm}{.5};
+        \connectionRight{bus data, <<>>, highlight if={7}}{-.25}{io intf}{.7};
+
+        \connectionRight{bus data, >>}{-.25}{dma}{.525};
+        \draw[bus data] ($ (dma conn-|data line bot) -(0, .5\pgflinewidth) $) -- (data line bot);
+
+		%	Address Line + connections
+		\draw[bus addr] (center|-mm.north) ++(.25, .25)                   coordinate (addr line top)
+                     to ($ (\tikztostart|-io intf.south) - (0, .25) $)    coordinate (addr line bot);
+
+		\node[bus addr label] at  (addr line top) {\scripted{6}{\lBusAddr}};
+
+		\draw[bus addr] (center|-cpu label.east) ++(.25, 0) to (cpu.east|-\tikztostart);
+        \connectionRight{bus addr, >>}{.25}{mm}{.3};
+        \connectionRight{bus addr, >>}{.25}{io intf}{.5};
+
+        \connectionRight{bus addr, <<, highlight if={4}}{.25}{dma}{.25};
+        \connectionRight{bus addr, >>}{.25}{dma}{.35};
+        \draw[bus addr] ($ (dma conn-|addr line bot) -(0, .5\pgflinewidth) $) -- (addr line bot);
+
+		% IO Device
+		\draw (io intf.east) ++(1, 0) node (io dev) [io dev, rotate=90] {\scripted{6}{\lIODevice}};
+		\draw[bus data, <<>>] (io dev.north) -- (io intf.east);
+
+        % CPU - DMA - IO signals
+        \draw[dma sig, <<, highlight if={2}, highlight if={8}] ($ (cpu.south west)!.7!(cpu.south east) $) |- ($ (dma.north west)!.7!(dma.south west) $) node[dma sig label] {\scripted{5}{\lHOLD}};
+        \draw[dma sig, >>, highlight if={3}, highlight if={9}] ($ (cpu.south west)!.5!(cpu.south east) $) |- ($ (dma.north west)!.8!(dma.south west) $) node[dma sig label] {\scripted{5}{\lHLDA}};
+        \draw[dma sig, <<, highlight if={8}] ($ (cpu.south west)!.3!(cpu.south east) $) |- ($ (dma.north west)!.9!(dma.south west) $) node[dma sig label] {\scripted{5}{\lEND}};
+
+        \draw[dma sig, >>, highlight if={6}] ($ (dma.north west)!.7!(dma.north east) $) to node[pos=.5, dma sig label vertical] {\scripted{5}{\lDACK}} ($ (\tikztostart|-io intf.south) $) ;
+        \draw[dma sig, <<, highlight if={1}] ($ (dma.north west)!.3!(dma.north east) $) to node[pos=.5, dma sig label vertical] {\scripted{5}{\lDREQ}} ($ (\tikztostart|-io intf.south) $);
+
+        \draw ($ (dma.north)!.15!(dma.south) $) node [dma reg] { \scripted{4}{\lDMARegAddr} };
+        \draw ($ (dma.north)!.85!(dma.south) $) node [dma reg] { \scripted{4}{\lDMARegCount} };
+
+        \begin{pgfonlayer}{background}
+            \fill[themeGreen, opacity=0.1] (dma.south west) rectangle (dma.north east);
+            \fill[themeGrey, opacity=0.1] (reg data.south west) rectangle (reg data.north east);
+        \end{pgfonlayer}
+
+	\end{tikzpicture}
+\end{document}

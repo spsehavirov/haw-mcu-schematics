@@ -1,0 +1,233 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lMainMemory}{Hlavní paměť}
+	\newcommand{\lCPU}{CPU}
+	\newcommand{\lCPURegisters}{registry}
+	\newcommand{\lBusData}{Datová sběrnice}
+	\newcommand{\lBusAddr}{Adresní sběrnice}
+	\newcommand{\lRegData}{Datový reg.}
+	\newcommand{\lRegStatus}{Stavový reg.}
+	\newcommand{\lRegControl}{řídicí reg.}
+	\newcommand{\lIODevice}{I/O Zařízení}
+    \newcommand{\lIOInterface}{I/O rozhraní}
+}
+
+\usetikzlibrary{
+	babel,
+	intersections,
+	calc,
+	arrows.meta,
+	shapes.arrows,
+	tikzmark,
+    backgrounds,
+}
+
+\ctikzset {
+	logic ports=european,
+	voltage shift=0.5,
+	resistors/scale=0.7,
+	capacitors/scale=0.6,
+	amplifiers/scale=0.8,
+}
+
+\makeatletter
+% Helper macro to hold node content before uppercasing
+\newcommand{\tikz@text@content}{}
+\tikzset{
+	execute at begin node/.style={
+		execute at begin node=$\begingroup\let\tikz@text@content=,
+		execute at end node=\endgroup#1
+	}
+}
+\makeatother
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+
+\newcommand{\scripted}[2]{%
+	{\fontsize{#1}{#1}\selectfont\strut\MakeUppercase{#2}}%
+}
+
+\newcommand{\textoverline}[1]{\ensuremath{\overline{\text{#1}}}}
+
+\NewDocumentCommand{\connectionRight}{m m m m}{%
+    \coordinate (#3 conn) at ($ (#3.north west)!#4!(#3.south west) $);
+    \draw[#1] ($ (center|-#3 conn) + (#2, 0) $) to (#3 conn|-\tikztostart);
+}
+
+\NewDocumentCommand{\connectionLeft}{m m m m}{%
+    \coordinate (#3 conn) at ($ (#3.north east)!#4!(#3.south east) $);
+    \draw[#1] ($ (center|-#3 conn) + (#2, 0) $) to (#3 conn|-\tikztostart);
+}
+
+\begin{document}
+	\begin{tikzpicture}[
+		european, straight voltages,
+		% --- Base styles ---
+		block/.style={
+			draw=themeGrey,
+			thick,
+			align=center,
+			font=\footnotesize,
+		},
+		small block/.style={
+			block,
+			font=\scriptsize,
+		},
+		% --- Specific blocks ---
+		main memory/.style={
+			block,
+			minimum height=3cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+		},
+		cpu/.style={
+			block,
+			text=themeGrey,
+			minimum height=3.5cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+		},
+		cpu reg/.style={
+			small block,
+			text=themeGrey,
+			minimum height=1.25cm,
+			minimum width=1.5cm,
+			text width=1.25cm,
+			anchor=center,
+		},
+		cpu label/.style={
+			font=\footnotesize,
+			anchor=north,
+		},
+		io intf/.style={
+			block,
+			text=themeGrey,
+			minimum height=2cm,
+			minimum width=1.5cm,
+			text width=1.5cm,
+            anchor=north,
+		},
+		io iface reg/.style={
+			block,
+			font=\footnotesize,
+			minimum height=.35cm,
+			minimum width=1.25cm,
+			text width=1.25cm,
+		},
+		io dev/.style={
+			block,
+			font=\scriptsize,
+			minimum height=.75cm,
+			minimum width=2cm,
+		},
+        we label/.style={
+            rotate=90, font=\scriptsize, above, text=themeOrange,
+        },
+        bus/.style={
+            line width=2pt,
+        },
+        bus data/.style={
+            bus,
+            themeGrey
+        },
+        bus addr/.style={
+            bus,
+            themeBlue
+        },
+        bus we/.style={
+            line width=1pt,
+            themeOrange
+        },
+        bus data label/.style={
+            rotate=90, font=\scriptsize, above, align=right
+        },
+        bus addr label/.style={
+            rotate=90, font=\scriptsize, align=right, anchor=east, text=themeBlue, above
+        },
+        >>/.style={
+            -{Triangle[length=5pt, width=5pt]}
+        },
+        <</.style={
+            {Triangle[length=5pt, width=5pt]}-
+        },
+        <<>>/.style={
+            {Triangle[length=5pt, width=5pt]}-{Triangle[length=5pt, width=5pt]}
+        },
+		]
+
+		\draw (0,0)                    node (mm)           [main memory]  {\scripted{7}{\lMainMemory}};
+   		\draw (mm)        ++(-5, -2.0) node (cpu)          [cpu]          {};
+		\draw (cpu.north) ++( 0, -0.5) node (cpu label)    [cpu label]    {\lCPU};
+		\draw (mm.south)  ++( 0, -1.0) node (io intf)      [io intf]      {};
+
+		% IO Interfaces (registers)
+     	\draw (io intf.center)         node (reg data)     [io iface reg] { \scripted{4}{\lRegData} };
+		\draw (reg data)  ++(0, -.55)  node (reg status)   [io iface reg] { \scripted{4}{\lRegStatus} };
+		\draw (reg data)  ++(0,  .55)  node (reg control)  [io iface reg] { \scripted{4}{\lRegControl} };
+		% CPU (registers)
+		\draw (cpu.center)             node                [cpu reg]      { \scripted{5}{\lCPURegisters} };
+
+        \draw (io intf.north) node[above, anchor=south, inner sep=0] {\scripted{5}{\lIOInterface}};
+
+        %   Center-point to calculate possitions from
+        \coordinate (center) at ($ (cpu.east|-mm.west)!.5!(mm.west|-cpu.east) $);
+
+		%	WE# lines
+		\coordinate (io we) at ($ (io intf.north west)!.3!(io intf.south west) $);
+		\draw[bus we, >>] ($ (cpu.east|-io we) $) to (io we|-\tikztostart);
+
+		\coordinate (mm we) at ($ (mm.south west)!.3!(mm.north west) $);
+		\draw[bus we, <<] (mm we) -- ++(-.75, 0)                          coordinate (mm we offset)
+                       to (io we-|\tikztostart)                           coordinate (io we offset);
+
+		\coordinate (we label pos) at ($ (mm we offset)!.5!(io we offset) $);
+		\node [we label] at (we label pos) {\textoverline{WE}};
+
+        % 	Data lines
+		\draw[bus data] (center|-mm.north) ++(-.25, .25)                  coordinate (data line top)
+                     to ($ (\tikztostart|-io intf.south) - (0, .25) $)    coordinate (data line bot);
+
+		\node[bus data label] at (data line top) {\scripted{6}{\lBusData}};
+
+        \connectionLeft{bus data, <<>>}{-.25}{cpu}{.5};
+        \connectionRight{bus data, <<>>}{-.25}{mm}{.5};
+        \connectionRight{bus data, <<>>}{-.25}{io intf}{.7};
+
+		%	Address Line + connections
+		\draw[bus addr] (center|-mm.north) ++(.25, .25)                   coordinate (addr line top)
+                     to ($ (\tikztostart|-io intf.south) - (0, .25) $)    coordinate (addr line bot);
+
+		\node[bus addr label] at  (addr line top) {\scripted{6}{\lBusAddr}};
+
+		\draw[bus addr] (center|-cpu label.east) ++(.25, 0) to (cpu.east|-\tikztostart);
+        \connectionRight{bus addr, >>}{.25}{mm}{.3};
+        \connectionRight{bus addr, >>}{.25}{io intf}{.5};
+
+		% IO Device
+		\draw (io intf.east) ++(1, 0) node (io dev) [io dev, rotate=90] {\scripted{6}{\lIODevice}};
+		\draw[bus data, <<>>] (io dev.north) -- (io intf.east);
+
+        \begin{pgfonlayer}{background}
+            \fill[themeGrey, opacity=0.1] (reg data.south west) rectangle (reg data.north east);
+        \end{pgfonlayer}
+	\end{tikzpicture}
+\end{document}
