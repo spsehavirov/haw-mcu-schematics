@@ -1,0 +1,342 @@
+% ==============================================================================
+% @file        ad_conversion.tex
+% @author      Tomáš Michalek
+% @date        2025-06-06
+% @version     1.0
+%
+% @copyright   Copyright (C) 2025 SPŠE Havířov
+% @license     EUPL-1.2-or-later
+% @SPDX-License-Identifier EUPL-1.2
+%
+% @description
+% This TikZ diagram illustrates the complete process of Analog-to-Digital
+% conversion (ADC) in sequential stages, including:
+%
+% 1. Analog input signal (continuous waveform)
+% 2. Sampling (impulses and vertical lines at sample points)
+% 3. Quantization (horizontal levels with decision thresholds)
+% 4. Coding (binary representation of quantized levels)
+% 5. Digital reconstruction (piecewise step approximation)
+%
+% All stages are conditionally visible via toggle macros (e.g. \AnalogSignalVisible),
+% allowing step-through visualizations for didactic use.
+%
+% The diagram supports multilingual captions through babel's \iflanguage switch.
+% To generate a different language version, define additional blocks:
+%   \iflanguage{<language>}{...}{...}
+% and provide translations for all relevant labels.
+%
+% @build
+% To compile this file:
+% > pdflatex ad_conversion.tex
+%
+% This standalone file produces a cropped PDF image suitable for inclusion in
+% educational materials such as presentations or printed worksheets.
+%
+% @dependencies
+% - TikZ
+% - PGF libraries: calc, arrows.meta, shapes.arrows, backgrounds, intersections
+% - etoolbox, xstring, xparse, amsmath
+% - Czech localization (babel[czech])
+% ==============================================================================
+
+\documentclass[tikz, border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{helvet}
+\usepackage{csquotes}
+\usepackage{xparse}
+\usepackage{xstring}
+\usepackage{etoolbox}
+\usepackage{xfp}
+
+\usetikzlibrary{
+    babel,
+    calc,
+    arrows.meta,
+}
+
+%% VISIBILITY CONFIGURATION
+
+% Analog signal
+\newcommand{\AnalogSignalVisible}{true}
+\newcommand{\UseGenericVoltageLabel}{~true}
+
+% Sampling
+\newcommand{\SamplingImpulsesVisible}{~true}
+
+\newcommand{\SampleIntervalsVisible}{~true}
+\newcommand{\SampleLineVisible}{~true}
+\newcommand{\SamplePointsVisible}{~true}
+\newcommand{\SamplePointValueVisible}{~true}
+
+% Quantization
+\newcommand{\QuantizationLevelsVisible}{~true}
+\newcommand{\QuantizationSubLevelsVisible}{~true}
+\newcommand{\QuantizationLevelLabelsVisible}{~true}
+\newcommand{\QuantizationPointsVisible}{~true}
+\newcommand{\QuantizationPointValueVisible}{~true}
+\newcommand{\QuantizationPointLineVisible}{~true}
+
+% Coding
+\newcommand{\CodingVisible}{~true}
+
+% Reconstructed signal
+\newcommand{\ReconstructionVisible}{~true}
+
+
+% Use \phantom to hide text for exams
+%\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+    \newcommand{\lTime}{t}
+    \newcommand{\lVoltage}{U}
+    \newcommand{\lVoltageInputSuffix}{vst}
+    \newcommand{\lVoltageSamplingSuffix}{vz}
+    \newcommand{\lQuantizationLevel}{Kvantizační úroveň}
+    \newcommand{\lQuantizationDecisionLevel}{Rozhodovací úroveň}
+}
+
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcommand{\textsized}[2]{%
+    {\fontsize{#1}{#1}\selectfont\strut #2}%
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themePurple}{RGB}{130, 85, 175}
+\definecolor{themeGreen}{RGB}{145, 170, 75}
+
+
+\newcommand{\VoltageSuffix}{\text{\lVoltageInputSuffix}}  % or empty
+\ifdefstring{\UseGenericVoltageLabel}{true}{
+    \renewcommand{\VoltageSuffix}{}%
+}{
+    \renewcommand{\VoltageSuffix}{\text{vst}}%
+}
+
+\begin{document}
+    \def\bitlist{}
+    \begin{tikzpicture}[xscale=1, yscale=.5]
+%        \draw[step=0.5, very thin, color=gray!30] (0,0) grid (4.5,8.5);
+
+        % Axes
+        \draw[-latex, themeGrey] (0,0) -- (5,0) node[right] {\tiny $\text{\lTime}$};
+        \draw[-latex, themeGrey] (0,0) -- (0,8) node[above] {\tiny $\text{\lVoltage}_{\VoltageSuffix}$};
+
+        % Y-axis ticks (8 total: 0–7)
+        \ifdefstring{\QuantizationLevelsVisible}{true} {%
+            \draw (0, 0) node [left] {\tiny 0};
+        }
+
+        \foreach \y in {1,...,7} {
+            \draw[themeGrey] (0.1,\y) -- (0,\y);
+
+            \ifdefstring{\QuantizationLevelsVisible}{true} {%
+                \draw (0, \y) node [left] {\tiny \y};
+            }
+
+        }
+
+        \ifdefstring{\QuantizationLevelsVisible}{true} {%
+            \foreach \y in {0,1, ..., 7} {%
+                \draw [themeTeal, opacity=.6] (0,\y) -- (4.75, \y);
+            }
+
+            \ifdefstring{\QuantizationLevelLabelsVisible}{true} {%
+                \draw (4.75, 7) node [anchor=west, themeTeal] {\textsized{4}{\lQuantizationLevel}};
+            }
+
+            \ifdefstring{\QuantizationSubLevelsVisible}{true} {%
+
+                \foreach \y in {0.5, 1.5, ..., 7.5} {%
+                    \draw [dashed, themeGrey, opacity=.3] (0,\y) -- (4.75, \y);
+                }
+
+            }
+
+           \ifdefstring{\QuantizationLevelLabelsVisible}{true} {%
+
+                \draw (4.75, 7.5) node [anchor=west, themeGrey] {\textsized{4}{\lQuantizationDecisionLevel}};
+
+            }
+        }
+        \typeout{--- START Analog Block ---}
+        % Analog waveform
+        \ifdefstring{\AnalogSignalVisible}{true} {
+
+            \typeout{AnalogSignalVisible: [\AnalogSignalVisible]}
+
+            \draw[very thick, themeOrange] plot[smooth, tension=.55] coordinates {
+                (-0.2,3)    % virtual
+                (0, 3.2)    % virtual
+                (.25, 3.8)  % virtual
+                (0.5,4.78)
+                (.76,5.8)   % virtual
+                (1.0,6.4)
+                (1.2,6.6)   % virtual
+                (1.5,6.55)
+                (2.0,5.88)
+                (2.5,5.48)
+                (3.0,5.50)
+                (3.5,6.45)
+                (4.0,6.585)
+                (4.5,5.795)
+                (4.75,5.5)  % virtual
+            };
+
+        }
+        \typeout{--- END Analog Block ---}
+
+        \foreach [count=\i from 1] \ytop in {
+            4.78,
+            6.4,
+            6.55,
+            5.88,
+            5.48,
+            5.50,
+            6.45,
+            6.585,
+            5.795
+        } {
+            % Calculate quantization points
+            \edef\x{\fpeval{0.5 * \i}}
+            \edef\yquant{\fpeval{round(\ytop, 0)}}
+            \edef\ydiff{\fpeval{\ytop - \yquant}}
+            \edef\yvis{\fpeval{0.5 * \yquant}}
+
+            \xdef\bitlist{\bitlist,\yquant}
+
+            \ifdim\ydiff pt>0pt
+                \def\pointcolor{themeBlue}
+            \else
+                \def\pointcolor{themeGreen}
+            \fi
+
+            \ifdefstring{\SampleLineVisible}{true} {%
+                \draw [ultra thick, themeBlue, opacity=.5] ({0.5 * \i}, \ytop) -- ({0.5 * \i}, 0.01);
+            }
+
+            \ifdefstring{\SampleIntervalsVisible}{true} {%
+                \draw[dashed, themeGrey, opacity=.5] ({.5*\i},0) -- (.5*\i, \ytop);
+            }
+
+            \ifdefstring{\SamplePointsVisible}{true} {%
+                \begin{scope}[yscale=2] % reverse scale
+                    \fill[themePurple] ({0.5 * \i}, .5*\ytop) circle[radius=1.5pt] coordinate (c top);
+
+                    \ifdefstring{\SamplePointValueVisible}{true} {%
+                        \draw (c top) node[above, themePurple] {\tiny \fpeval{round(\ytop, 2)}};
+                    }
+
+                \end{scope}
+            }
+
+
+            \begin{scope}[yscale=2] % reverse scale
+
+                \ifdefstring{\QuantizationPointLineVisible}{true} {%
+
+                    \draw [ultra thick, themeGreen, opacity=.5] (\x, 0.01) -- (\x, \yvis);
+
+                }
+
+                \ifdefstring{\QuantizationPointsVisible}{true} {%
+
+                    \fill[\pointcolor] (\x, \yvis) circle[radius=1.5pt] coordinate (c quant);
+
+                    \ifdefstring{\QuantizationPointValueVisible}{true} {%
+
+                        \draw (c quant) node[above, \pointcolor] {\tiny \yquant};
+
+                    }
+
+                }
+
+            \end{scope}
+
+        }
+
+        \ifdefstring{\SamplingImpulsesVisible}{true} {%
+
+            \begin{scope}[yshift=-4cm]
+                \draw[-latex, themeGrey] (0,0) -- (5,0) node[right] {\tiny $\text{\lTime}$};
+                \draw[-latex, themeGrey] (0,0) -- (0,3) node[above] {\tiny $\text{\lVoltage}_{\text{\lVoltageSamplingSuffix}}$};
+
+                \foreach \x in {0.5, 1, ..., 4.5}{%
+
+                    \draw[ultra thick, themeGreen!40] (\x, 0.012) -- (\x, 2);
+
+                }
+            \end{scope}
+
+        }
+
+        \ifdefstring{\CodingVisible}{true} {%
+            \ifdefstring{\SamplingImpulsesVisible}{true}{
+                \def\myYShift{-7cm}  % More space if analog signal is visible
+            }{
+                \def\myYShift{-4cm}  % Default shift
+            }
+
+            \begin{scope}[yshift=\myYShift]
+                \draw[-latex, themeGrey] (0,0) -- (5,0) node[right] {\tiny $\text{t}$};
+
+                \foreach \x [count=\i from 0] in {0.5, 1, ..., 4.5}{%
+
+                    \draw[line width=6, themeBlue!40] (\x, 0.012) -- (\x, 2);
+
+                }
+
+                % Strip leading commas
+                \def\stripcomma,#1{#1}
+                \edef\bitlist{\expandafter\stripcomma\bitlist}
+
+                \typeout{Bitlist: \bitlist}
+
+                \foreach [count=\i from 1] \xnum in \bitlist {
+                    % Convert decimal to binary
+                    \pgfmathsetmacro{\bina}{int(mod(\xnum,2))}
+                    \pgfmathsetmacro{\temp}{int(\xnum/2)}
+                    \pgfmathsetmacro{\binb}{int(mod(\temp,2))}
+                    \pgfmathsetmacro{\temp}{int(\temp/2)}
+                    \pgfmathsetmacro{\binc}{int(mod(\temp,2))}
+                    \pgfmathsetmacro{\temp}{int(\temp/2)}
+                    \pgfmathsetmacro{\bind}{int(mod(\temp,2))}
+
+                    % Assemble vertical binary
+                    \edef\binarylabel{\binc\\\binb\\\bina}
+
+                    \draw[line width=6, themeBlue!40] (\i*0.5, 0.012) -- (\i*0.5, 2);
+                    \node at (\i*.5,1) [
+                         align=center,
+                         text width=6pt,
+                         font=\fontsize{4pt}{4pt}\selectfont
+                    ] { \binarylabel };
+                }
+
+            \end{scope}
+
+        }
+
+        \ifdefstring{\ReconstructionVisible}{true} {%
+            \draw[ultra thick, dashed, themePurple] (0, \pgflinewidth) -- ($ (.5, \pgflinewidth) + (.5*\pgflinewidth, 0) $);
+
+            \foreach [count=\i from 1, remember=\xnum as \lastxnum (initially 0), remember=\i as \lasti (initially 1)] \xnum in \bitlist {
+
+                \draw[ultra thick, themePurple] (.5*\lasti, \lastxnum) |- ($ (.5*\i, \xnum) + (.5*\pgflinewidth, 0) $);
+
+            }
+
+        }
+
+    \end{tikzpicture}
+\end{document}
