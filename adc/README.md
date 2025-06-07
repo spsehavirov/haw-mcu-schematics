@@ -1,6 +1,7 @@
 # AD převodníky
 
 ![Převod](dist/png/ad_conversion_flat.png)
+Pro jednotlivé kroky převodu si zobrazte podstránku [PROCESS.md](PROCESS.md).
 
 # Flash (paralelní) AD
 
