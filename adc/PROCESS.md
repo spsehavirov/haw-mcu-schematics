@@ -1,4 +1,4 @@
-# ADC Visualization Gallery
+# AD conversion visualization
 
 This gallery showcases flat PNG variants of ADC-related diagrams generated from LaTeX sources.
 
