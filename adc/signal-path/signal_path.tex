@@ -1,0 +1,180 @@
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+\usepackage{graphicx}
+\usepackage{etoolbox}
+\usepackage{xstring}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\iflanguage{czech}{
+    \newcommand{\lMic}{mikrofon}
+    \newcommand{\lSpeaker}{reproduktor}
+    \newcommand{\lSoundWaves}{Zvukové vlny}
+    \newcommand{\lElectricalVoltage}{elektrické napětí}
+    \newcommand{\lADC}{ADC}
+    \newcommand{\lDAC}{DAC}
+    \newcommand{\lDSP}{DSP}
+    \newcommand{\lStorage}{Uložiště}
+    \newcommand{\lInsidePC}{Uvnitř počítače}
+}
+
+\usetikzlibrary{
+    babel,
+    calc,
+    arrows.meta,
+    shapes.arrows,
+    positioning,
+    backgrounds,
+    fit,
+}
+
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
+\pdfsuppresswarningpagegroup=1 % Suppress PDF includes group warnings
+
+\makeatletter
+% Helper macro to hold node content before uppercasing
+\newcommand{\tikz@text@content}{}
+\tikzset{
+    execute at begin node/.style={
+        execute at begin node=$\begingroup\let\tikz@text@content=,
+        execute at end node=\endgroup#1
+    }
+}
+\makeatother
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themePurple}{RGB}{130, 85, 175}
+\definecolor{themeGreen}{RGB}{145, 170, 75}
+
+\newcommand{\scripted}[2]{%
+    % #1 = font size (e.g., 12pt)
+    % #2 = text to uppercase
+    {\fontsize{#1}{#1}\selectfont\strut\MakeUppercase{#2}}%
+}
+
+\NewDocumentCommand{\ImageNode}{m m m O{1cm} o}{%
+    % #1 = TikZ placement (e.g., at (0,0) or right=2cm of foo)
+    % #2 = node name (for referencing)
+    % #3 = image filename
+    % #4 = width (optional, default 2cm)
+    % #5 = label (optional)
+    \IfNoValueTF{#4}{\def\imgwidth{1cm}}{%
+        \IfBlankTF{#4}{\def\imgwidth{1cm}}{\def\imgwidth{#4}}
+    }%
+    \draw #1 node (#2) {\includegraphics[width=\imgwidth,keepaspectratio]{#3}};
+    \IfValueT{#5}{%
+        \node[below=0.05cm of #2] {#5};
+    }
+}
+
+\NewDocumentCommand{\ImageNodeMirrored}{m m m O{1cm} o}{%
+    % #1 = TikZ placement (e.g., at (0,0) or right=2cm of foo)
+    % #2 = node name (for referencing)
+    % #3 = image filename
+    % #4 = width (optional, default 2cm)
+    % #5 = label (optional)
+    \IfNoValueTF{#4}{\def\imgwidth{1cm}}{%
+        \IfBlankTF{#4}{\def\imgwidth{1cm}}{\def\imgwidth{#4}}
+    }%
+    \draw #1 node (#2) [xscale=-1] {\includegraphics[width=\imgwidth,keepaspectratio]{#3}};
+    \IfValueT{#5}{%
+        \node[below=0.05cm of #2] {#5};
+    }
+}
+
+\newcommand{\hspacing}{1.75}
+
+\begin{document}
+    \begin{tikzpicture}[
+        >>/.style={-{Triangle[length=4pt, width=4pt]}},
+        frame/.style={themeGrey, draw, rounded corners=1pt},
+        computer box/.style={thick, themeGrey, rounded corners=2pt},
+        computer wire/.style={thick, dotted, >>},
+        wire/.style={ultra thick, line cap=round},
+        pics/soundwaves/.style={
+            code={
+                \begin{scope}
+                    \foreach \i in {0,...,4} {
+                        \pgfmathsetmacro\x{\i * 0.6}
+                        \pgfmathsetmacro\h{1.0 + \i * 0.5}
+                        \pgfmathsetmacro\a{0.2 + \i * 0.1}
+                        \pgfmathsetmacro\ymin{-\h/2}
+                        \pgfmathsetmacro\ymax{\h/2}
+%
+                        \draw[thick, themeBlue]
+                        (\x, \ymin) coordinate (pwave\i)
+                        .. controls +(\a, \h*0.25) and +(-\a, -\h*0.25)
+                        .. (\x, \ymax)
+                        coordinate (wave\i);
+                    }
+                \end{scope}
+%
+                % Vytvoří uzel jménem podle \pic
+                \node (-box) [inner sep=0pt, draw=none,
+                      fit={(pwave0) (pwave1) (pwave2) (pwave3) (pwave4)
+                          (wave0) (wave1) (wave2) (wave3) (wave4)}] {};
+                \draw (-box.south) ++(down:.1cm) node {#1};
+            }
+        },
+        ]
+
+        \ImageNode{(0, 0)}{avatar 1}{icons/pdf/avatar-man}[4cm][] %\textbf{\Large Zdroj }
+        \ImageNode{(avatar 1) ++(6cm, 0)}{mic}{icons/pdf/microphone}[1.5cm][\scripted{5}{\lMic}]
+        \ImageNode{(mic) ++(6cm, 0)}{adc}{icons/pdf/sound-card}[1.5cm][\scripted{5}{\lADC}]
+        \ImageNode{(adc) ++(2.5cm, 0)}{dsp}{icons/pdf/chip}[1.5cm][\scripted{5}{\lDSP}]
+        \ImageNodeMirrored{(dsp) ++(2.5cm, 0)}{dac}{icons/pdf/sound-card}[1.5cm][\scripted{5}{\lDAC}]
+        \ImageNode{(dac) ++(6cm, 0)}{speaker}{icons/pdf/speaker}[1.2cm][\scripted{5}{\lSpeaker}]
+        \ImageNodeMirrored{(speaker) ++(6cm, 0)}{avatar 2}{icons/pdf/avatar-woman}[4cm][]
+
+        \ImageNode{(dsp) ++(up:3cm)}{ssd}{icons/pdf/ssd}[1.5cm][]
+        \draw (ssd.north) node [] {\scripted{5}{\lStorage}};
+
+        \ImageNode{(mic) ++(right:3cm)}{wave 1}{icons/pdf/audio_signal}[1.75cm][]
+        \ImageNode{(dac) ++(right:3cm)}{wave 2}{icons/pdf/audio_signal}[1.75cm][]
+
+        \draw[computer wire] (dsp) -- ($ (ssd.south) +(0, .2cm) $);
+        \draw[computer wire] (adc) -- ($ (dsp.west) +(0, 0) $);
+        \draw[computer wire] (dsp) -- ($ (dac.east) +(0, 0) $);
+
+        \draw node [frame, fit=(wave 1)] (wave 1 frame) {};
+        \draw node [frame, fit=(wave 2)] (wave 2 frame) {};
+
+        \draw (wave 1 frame.south) node[below] {\scripted{5}{\lElectricalVoltage}};
+        \draw (wave 2 frame.south) node[below] {\scripted{5}{\lElectricalVoltage}};
+
+        \draw [computer box]
+               ($ (adc.south west) - (-.2,  1) $)           coordinate (f 0)
+            -- ($ (dac.south west) + (-.2, -1) $)           coordinate (f 1)
+            to (\tikztostart|-ssd.north east) -- ++(0, .5)  coordinate (f 2)
+            to (f 0|-\tikztostart)                          coordinate (f 3)
+            -- cycle;
+
+         \draw ($ (f 0)!.5!(f 1) + (0, .1) $) node[themeGrey] {\scripted{4}{\textbf{\lInsidePC}}};
+
+         \pic (sound 1) at ($ (avatar 1.east) + (-.25, 0) $) {soundwaves={\scripted{5}{\lSoundWaves}}};
+         \pic (sound 2) at ($ (speaker.east) + (.5,0) $) {soundwaves={\scripted{5}{\lSoundWaves}}};
+
+         \begin{pgfonlayer}{background}
+             \draw[wire] (mic.east) ++(left:.46cm) to[out=30, in=180]  (wave 1 frame.west);
+             \draw[wire] (wave 1 frame.east)  to[out=0, in=180]  ($ (adc.west) + (.2, .125) $);
+             \draw[wire] ($ (dac.west) + (-.2, .3125) $) to[out=0, in=180]  (wave 2 frame.west);
+             \draw[wire] (wave 2 frame.east)  to[out=0, in=180]  ($ (speaker.west) + (.2, .125) $);
+
+             \draw node [frame, fill=white, fit=(wave 1)] {}; % fill bg to mask wires
+             \draw node [frame, fill=white, fit=(wave 2)] {};
+        \end{pgfonlayer}
+    \end{tikzpicture}
+\end{document}
