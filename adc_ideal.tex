@@ -1,0 +1,177 @@
+% ==============================================================================
+% @file        adc_ideal.tex
+% @author      Tomáš Michalek
+% @date        2025-06-28
+% @version     1.0
+%
+% @copyright   Copyright (C) 2025 SPŠE Havířov
+% @license     EUPL-1.2-or-later
+% @SPDX-License-Identifier EUPL-1.2
+%
+% @description
+% This TikZ diagram illustrates the transfer characteristic of an ideal
+% Analog-to-Digital Converter (ADC) with a 3-bit resolution.
+%
+% The following elements are included:
+% - Continuous (orange) reference line representing an ADC with infinite resolution
+% - Stepwise (blue) quantization characteristic of a 3-bit ideal ADC
+% - Bitwise binary output labels aligned with quantization levels
+% - Full-scale marker and axis labels for analog input and digital output
+% - LSB (Least Significant Bit) visualized both vertically and horizontally
+%
+% The diagram is fully localized using babel's \iflanguage construct. Czech labels
+% are currently provided. To support more languages, extend the \iflanguage block.
+%
+% This diagram is designed for teaching digital electronics and signal processing
+% in technical secondary schools. It highlights quantization effects and resolution.
+%
+% @build
+% To compile this file:
+% > pdflatex adc_ideal.tex
+%
+% This standalone LaTeX file produces a cropped PDF suitable for use in
+% presentations, worksheets, and other educational materials.
+%
+% @dependencies
+% - TikZ and PGF libraries: calc, arrows.meta, shapes.arrows, backgrounds, spy
+% - Babel with Czech localization
+% - Font and math support: helvet, amsmath, inputenc, fontenc
+% - etoolbox, xstring, xparse for preprocessing and logic
+% ==============================================================================
+\documentclass[tikz, margin=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+\usepackage{graphicx}
+\usepackage{etoolbox}
+\usepackage{xstring}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\iflanguage{czech}{
+    \newcommand{\lFullScale}{FS}
+    \newcommand{\lLSB}{LSB}
+    \newcommand{\lIdealChar}{ideální převodní\\charakteristika}
+    \newcommand{\lInfiniteResolution}{charakteristika s\\nekonečným rozlišením}
+    \newcommand{\lOutputBinaryCode}{výstupní binární kód}
+    \newcommand{\lInputAnalogSignal}{vstupní analogový signál}
+}
+
+\usetikzlibrary{
+    babel,
+    calc,
+    arrows.meta,
+    shapes.arrows,
+    positioning,
+    backgrounds,
+    fit,
+    spy,
+}
+
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
+\pdfsuppresswarningpagegroup=1 % Suppress PDF includes group warnings
+
+\newcommand{\AnalogSignalVisible}{true}
+\newcommand{\UseGenericVoltageLabel}{~true}
+
+\makeatletter
+% Helper macro to hold node content before uppercasing
+\newcommand{\tikz@text@content}{}
+\tikzset{
+    execute at begin node/.style={
+        execute at begin node=$\begingroup\let\tikz@text@content=,
+        execute at end node=\endgroup#1
+    }
+}
+\makeatother
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themePurple}{RGB}{130, 85, 175}
+\definecolor{themeGreen}{RGB}{145, 170, 75}
+
+\newcommand{\scripted}[2]{%
+    % #1 = font size (e.g., 12pt)
+    % #2 = text to uppercase
+    {\fontsize{#1}{#1}\selectfont\strut\MakeUppercase{#2}}%
+}
+
+\begin{document}
+    \begin{tikzpicture}[%
+%        spy using outlines={circle, themeGreen, magnification=1.75, size=3cm, connect spies},
+        >>/.style={-{Triangle[length=4pt, width=4pt]}},
+        <<>>/.style={{Triangle[length=2pt, width=2pt]}-{Triangle[length=2pt, width=2pt]}},
+        axis/.style={>>, thick, themeGrey},
+        axis label help/.style={thick, themeGrey},
+        fence/.style={themeGrey, dashed},
+        lsb helper/.style={themeGrey, dotted},
+        lsb arrow/.style={themeGrey, <<>>},
+        ]
+
+%        \draw[step=1cm,gray,very thin, opacity=.2] (0,0) grid (9,9);
+        \draw [axis] (0, -.5*\pgflinewidth) -- (0, 8);
+        \draw [axis] (0, 0) -- (9, 0);
+
+        \draw [fence] (7, 0) -- (7, 7);
+        \draw [fence] (0, 7) -- (7, 7);
+
+        \draw [axis label help] (-.1, 0) node [left] { 000 };
+        \draw [axis label help] (8, .1) -- (8, -.1) node [below] { \lFullScale };
+
+        \draw [lsb helper] (3.5, 3) -- ++(right:1.5) coordinate (lsb v bot);
+        \draw [lsb helper] (4.5, 4) -- ++(right:0.5) coordinate (lsb v top);
+        \draw [lsb arrow]  (lsb v top) -- (lsb v bot);
+        \draw ($ (lsb v top)!.5!(lsb v bot) $) node[right, themeGrey, ] {\fontsize{5}{5}\selectfont LSB};
+
+        \draw [lsb helper] (3.5, 3) -- ++(down:.5) coordinate (lsb h left);
+        \draw [lsb helper] (4.5, 4) -- ++(down:1.5) coordinate (lsb h right);
+        \draw [lsb arrow]  (lsb h left) -- (lsb h right);
+
+        \draw ($ (lsb h left)!.5!(lsb h right) $) node [below, themeGrey] {\fontsize{5}{5}\selectfont \lLSB};
+
+        \foreach \y in {0, ..., 7}{%
+             % Convert decimal to binary
+            \pgfmathsetmacro{\bina}{int(mod(\y,2))}
+            \pgfmathsetmacro{\temp}{int(\y/2)}
+            \pgfmathsetmacro{\binb}{int(mod(\temp,2))}
+            \pgfmathsetmacro{\temp}{int(\temp/2)}
+            \pgfmathsetmacro{\binc}{int(mod(\temp,2))}
+            \pgfmathsetmacro{\temp}{int(\temp/2)}
+            \pgfmathsetmacro{\bind}{int(mod(\temp,2))}
+            % Assemble vertical binary
+            \edef\binarylabel{\binc\\\binb\\\bina}
+
+            \draw[thick, themeGrey] (.1, \y) -- (-.1, \y) node [left] { \binarylabel };
+        }
+
+        \foreach \x in {0, ..., 7}{%
+            \draw[thick, themeGrey] (\x, .1) -- (\x, -.1) node [below] {$ \frac{\text{\x}}{\text{8}} $};
+        }
+
+        \draw [themeOrange, thick] (0, 0) -- (7.5, 7.5);
+
+        \draw [ultra thick, themeBlue] (0, 0) -- ($ (.5, 0) + (.5*\pgflinewidth, 0)$);
+        \foreach [count=\x from 1] \y in {0, ..., 6}{%
+
+            \draw[ultra thick, themeBlue] (\x-.5, \y) |- (\x, \y+1) -- ($ (\x+.5, \y+1) + (.5*\pgflinewidth, 0) $);
+        }
+
+        \draw (2, 5) node [themeBlue, align=center] {\lIdealChar};
+        \draw (5, 1.5) node [themeOrange, align=center] {\lInfiniteResolution};
+
+        \draw ($ (-1.25, 0)!.5!(-1.25, 8) $) node [themeGrey, rotate=90, align=center] {\fontsize{7}{7}\selectfont \lOutputBinaryCode};
+        \draw ($ (0, -1.25)!.5!(8, -1.25) $) node [themeGrey, align=center] {\fontsize{7}{7}\selectfont \lInputAnalogSignal};
+
+%        \spy on (4, 3.5) in node (zoom) [left] at (11, 4);
+    \end{tikzpicture}
+\end{document}
