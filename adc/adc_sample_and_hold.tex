@@ -1,0 +1,108 @@
+% ==============================================================================
+% @file        adc_sample_and_hold.tex
+% @author      Tomáš Michalek
+% @date        2025-06-28
+% @version     1.0
+%
+% @copyright   Copyright (C) 2025 SPŠE Havířov
+% @license     EUPL-1.2-or-later
+% @SPDX-License-Identifier EUPL-1.2
+%
+% @description
+% This TikZ/Circuitikz diagram depicts the internal structure of a Sample-and-Hold
+% (S&H) circuit block, typically used at the front-end of an Analog-to-Digital Converter (ADC).
+%
+% The key components and flow:
+% - Input buffer amplifier (preamp) driving the sampling switch
+% - Electronic switch (represented symbolically) with labeled control line
+% - Hold capacitor (C_Hold) storing sampled voltage
+% - Output buffer amplifier (to isolate load from capacitor droop)
+%
+% Signal and control annotations are provided in Czech and customizable via
+% \iflanguage{czech} macros (e.g., \lAnalogIn, \lHoldCommand).
+%
+% The switch control path is highlighted using a dashed guide and labeled driver block.
+% Capacitor symbols are scaled using \ctikzset{capacitors/scale=0.6} for compact layout.
+%
+% The diagram uses Helvetica font and is designed to be embedded in printed or
+% presentation materials with minimal external dependencies.
+%
+% @build
+% To compile this file standalone:
+% > pdflatex adc_sample_and_hold.tex
+%
+% This will produce a tightly-cropped PDF with 2pt margin for clean inclusion.
+%
+% @dependencies
+% - TikZ
+% - Circuitikz (logic ports=ieee)
+% - PGF libraries: calc, fit, backgrounds, shapes.geometric
+% - Babel with Czech localization
+% - Helvetica font and supporting fontenc/inputenc packages
+% ==============================================================================
+\documentclass[border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage[czech]{babel}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[table]{xcolor}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\iflanguage{czech} {
+    \newcommand{\lAnalogIn}{Analogový\\vstup}
+    \newcommand{\lAnalogOut}{Analogový\\výstup}
+    \newcommand{\lHoldCommand}{Příkaz\\HOLD}
+    \newcommand{\lSwitchDriver}{Řadič přepínače}
+    \newcommand{\lSwitch}{Přepínač}
+}
+
+\usetikzlibrary{calc}
+\ctikzset{logic ports=ieee}
+\ctikzset{capacitors/scale=0.6}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themePurple}{RGB}{130, 85, 175}
+\definecolor{themeGreen}{RGB}{145, 170, 75}
+
+\begin{document}
+    \begin{circuitikz}[%
+        straight voltages,
+        label above/.style={above, align=center, themeGrey},
+        driver/.style={solid, draw, thick, anchor=east, minimum width=2cm, minimum height=1cm, align=center},
+        a amp/.style={plain mono amp},
+        switch/.style={nosshape, anchor=left},
+    ]
+
+    \draw (0,0) node[a amp] (preamp) {};
+
+    \draw (preamp.in) to[short, -o] ++(left: 2cm) node [label above] {\lAnalogIn} coordinate (analog in);
+    \draw (preamp.out)
+        -- ++(right:1cm) node [switch] (sw) {}
+           ++(up:.25cm)  node [label above, xshift=.25cm] {\lSwitch};
+
+    \draw[dashed] (sw.mid)
+        -- ++(down:3cm)
+        -- ++(left:1.5cm)
+        node [driver] (driver) {\fontsize{5pt}{5pt}\selectfont\MakeUppercase{\lSwitchDriver}};
+
+    \draw (driver.west) to[short, -o] (\tikztostart-|analog in) node [label above] {\lHoldCommand};
+
+    \draw (sw.right)
+        to[short, o-] ++(right:1.5cm) coordinate (C junc)
+        --            ++(right:1.5cm) node [a amp, anchor=in] (amp) {};
+
+    \draw (C junc)
+        to [short, *-]                   ++(down:.5cm)
+        to [C, l=$\text{C}_\text{Hold}$] ++(down:1.5) node[ground] {};
+
+    \draw (amp.out) to[short, -o] ++(right:1.5) node [label above] {\lAnalogOut};
+    \end{circuitikz}
+\end{document}
