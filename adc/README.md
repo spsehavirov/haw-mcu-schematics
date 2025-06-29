@@ -3,6 +3,14 @@
 ![Převod](dist/png/ad_conversion_flat.png)
 Pro jednotlivé kroky převodu si zobrazte podstránku [PROCESS.md](PROCESS.md).
 
+# Sample & Hold
+
+![Sample & Hold](dist/png/adc_sample_and_hold_flat.png)
+
+# Ideální převodová křivka AD převodníku
+
+![ADC Ideal](dist/png/adc_ideal_flat.png)
+
 # Flash (paralelní) AD
 
 ![Flash AD](dist/png/adc_flash_flat.png)
