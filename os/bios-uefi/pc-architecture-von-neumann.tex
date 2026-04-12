@@ -1,0 +1,109 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\usepackage{xint}
+\usepackage{xinttools}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lBus}{Sběrnice}
+	\newcommand{\lCPU}{CPU}
+	\newcommand{\lIO}{I/O}
+	\newcommand{\lLinesData}{Datové linky}
+	\newcommand{\lLinesAddress}{Adresní linky}
+	\newcommand{\lLinesControl}{Řídící linky}
+	\newcommand{\lMemory}{Paměť}
+}
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		meta component/.style={draw, fill=white, align=center},
+		reg/.style={meta component, anchor=north, minimum width=3cm, minimum height=.6cm, yshift=\pgflinewidth},
+		dev/.style={meta component, minimum width=4cm, minimum height=2.5cm, font=\large\bfseries},
+		brace mirror/.style={decoration={brace,mirror,raise=5pt}, decorate},
+        		brace/.style={decoration={brace,raise=5pt}, decorate},
+		label left/.style={font=\small, minimum width=1cm, align=right, left=10pt},
+        		label right/.style={font=\small, minimum width=1cm, align=left, right=10pt},
+	]
+	
+	\node (cpu) [dev] {\lCPU};
+	\node (mem 0) at ($ (cpu.east) + (3.5cm, 0) $) [dev] {\lMemory};
+	\node (mem 1) at ($ (mem 0.east) + (3.5cm, 0) $) [dev] {\lMemory};
+	\node (io 0) at ($ (mem 1.east) + (3.5cm, 0) $) [dev] {\lIO};
+	\node (io 1) at ($ (io 0.east) + (3.5cm, 0) $) [dev] {\lIO};
+	
+	\draw[fill=themeBlue!5] ($ (cpu.south west)!.3!(cpu.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -3cm) to (\tikztostart-|mem 0.west) -| ($ (mem 0.south west)!.1!(mem 0.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 0.south west)!.3!(mem 0.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -3cm) to (\tikztostart-|mem 1.west) -| ($ (mem 1.south west)!.1!(mem 1.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 1.south west)!.3!(mem 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -3cm) to (\tikztostart-|io 0.west)      -| ($ (io 0.south west)!.1!(io 0.south east) +(0,.5\pgflinewidth) $) -- ($ (io 0.south west)!.3!(io 0.south east)+(0,.5\pgflinewidth) $) 
+		-- ++(0, -3cm) to (\tikztostart-|io 1.west)      -| ($ (io 1.south west)!.1!(io 1.south east) +(0,.5\pgflinewidth) $) -- ($ (io 1.south west)!.3!(io 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -3.7cm) to (\tikztostart-|cpu.east) -| ($ (cpu.south west)!.1!(cpu.south east) +(0,.5\pgflinewidth) $) -- cycle;
+		
+	\draw[fill=themeOrange!5] ($ (cpu.south west)!.6!(cpu.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -2cm) to (\tikztostart-|mem 0.west) -| ($ (mem 0.south west)!.4!(mem 0.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 0.south west)!.6!(mem 0.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -2cm) to (\tikztostart-|mem 1.west) -| ($ (mem 1.south west)!.4!(mem 1.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 1.south west)!.6!(mem 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -2cm) to (\tikztostart-|io 0.west)      -| ($ (io 0.south west)!.4!(io 0.south east) +(0,.5\pgflinewidth) $) -- ($ (io 0.south west)!.6!(io 0.south east)+(0,.5\pgflinewidth) $) 
+		-- ++(0, -2cm) to (\tikztostart-|io 1.west)      -| ($ (io 1.south west)!.4!(io 1.south east) +(0,.5\pgflinewidth) $) -- ($ (io 1.south west)!.6!(io 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -2.7cm) to (\tikztostart-|cpu.east) -| ($ (cpu.south west)!.4!(cpu.south east) +(0,.5\pgflinewidth) $) -- cycle;
+	
+	\draw[fill=themeGrey!5] ($ (cpu.south west)!.9!(cpu.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -1cm) to (\tikztostart-|mem 0) -| ($ (mem 0.south west)!.7!(mem 0.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 0.south west)!.9!(mem 0.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -1cm) to (\tikztostart-|mem 1) -| ($ (mem 1.south west)!.7!(mem 1.south east) +(0,.5\pgflinewidth) $) -- ($ (mem 1.south west)!.9!(mem 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -1cm) to (\tikztostart-|io 0) -| ($ (io 0.south west)!.7!(io 0.south east) +(0,.5\pgflinewidth) $) -- ($ (io 0.south west)!.9!(io 0.south east)+(0,.5\pgflinewidth) $) 
+		-- ++(0, -1cm) to (\tikztostart-|io 1) -| ($ (io 1.south west)!.7!(io 1.south east) +(0,.5\pgflinewidth) $) -- ($ (io 1.south west)!.9!(io 1.south east) +(0,.5\pgflinewidth) $) 
+		-- ++(0, -1.7cm) to (\tikztostart-|cpu.east) -| ($ (cpu.south west)!.7!(cpu.south east) +(0,.5\pgflinewidth) $) -- cycle;
+		
+	\node at ($ (mem 1.south) - (0, 1.65cm)$) [above, font=\bfseries] {\lLinesControl};
+	\node at ($ (mem 1.south) - (0, 2.65cm)$) [above, font=\bfseries] {\lLinesAddress};
+	\node at ($ (mem 1.south) - (0, 3.65cm)$) [above, font=\bfseries] {\lLinesData};
+	
+	\draw[brace] ($ (io 1.south east) +(0, -1cm) $) to node[midway, label right] {\lBus} ($ (\tikztostart) - (0, 2.7cm) $);
+	
+	\node at ($ (mem 0)!.5!(mem 1) $) [font=\bfseries] { \ldots };
+	\node at ($ (io 0)!.5!(io 1) $) [font=\bfseries] { \ldots };
+		 
+	
+	\end{tikzpicture}
+\end{document}

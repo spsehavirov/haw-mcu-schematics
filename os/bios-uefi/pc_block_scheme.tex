@@ -1,0 +1,178 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lMainBus}{Sběrnice - data, adresy, řízení}
+	\newcommand{\lPCUnitCase}{Počítačová jednotka - skříň}
+	\newcommand{\lMotherboard}{Základní deska}
+	\newcommand{\lControllerKeyboard}{Řadič\\klávesnice}
+	\newcommand{\lControllerMouse}{Port\\myši}
+	\newcommand{\lControllerDisks}{Řadič disků}
+	\newcommand{\lUniversalInterface}{Univerzální\\rozhraní}
+	\newcommand{\lParallelInterface}{Paralelní\\rozhraní}
+	\newcommand{\lProcessor}{Procesor}
+	\newcommand{\lMemory}{Paměť}
+	\newcommand{\lChipset}{Čipová sada}
+	\newcommand{\lCooler}{Chladič}
+	\newcommand{\lFan}{Ventilátor}
+	\newcommand{\lHardDrive}{Pevný disk}
+	\newcommand{\lKeyboard}{Klávesnice}
+	\newcommand{\lMouse}{Myš}
+	\newcommand{\lUSBFlashdisk}{Flash disk}
+	\newcommand{\lGraphicAdapter}{Grafický\\adaptér}
+	\newcommand{\lSoundAdapter}{{Zvukový}\\{adapter}}
+	\newcommand{\lNetworkAdapter}{{Síťový}\\{adapter}}
+	\newcommand{\lMonitor}{Monitor}
+	\newcommand{\lAudioDevices}{Repro\\Mikrofón}
+	\newcommand{\lNetworking}{Síť\\Internet}
+	\newcommand{\lPheripherals}{Periferní zařízení}
+	\newcommand{\lPSU}{Síťový zdroj}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		font=\small,
+		element/.style={draw, rounded corners=4pt, minimum width=3.5cm, minimum height=1cm}, %rounded corners=4pt
+		arrow/.style={draw, single arrow, single arrow head extend=3pt},
+		connect/.style={draw, fill=white, double arrow, double arrow head extend=2pt, rotate=90, anchor=tip 2},
+		meta component/.style={draw,  fill=white, align=center},
+		component square/.style={meta component, draw, anchor=west, minimum size=2cm},
+		component/.style={meta component, anchor=west, minimum width=2cm, minimum height=1cm},
+		bus/.style={minimum width=18cm, minimum height=1cm, draw, fill=white},
+		bus sideload/.style={minimum width=6cm, minimum height=.5cm, draw, rotate=90, fill=white, anchor=east, xshift=2em, font=\bfseries},
+		device internal/.style={anchor=north, draw, minimum width=2cm, minimum height=1.25cm, align=center, yshift=\pgflinewidth},
+		device/.style={draw, fill=white, anchor=north, minimum width=2cm, minimum height=1cm, align=center},
+		label/.style={thick, draw, fill=themeOrange!20, minimum height=1.5em,  font=\bfseries},
+	]
+	%\draw[help lines] (-5,-5) grid[step=0.25] (5,5);	
+
+	\pgfdeclarelayer{underground}
+	\pgfdeclarelayer{background}
+	\pgfdeclarelayer{foreground}
+	\pgfsetlayers{underground,background,main,foreground}
+	
+	\node (bus) [bus] {}; %Sběrnice
+	\node at ($ (bus.west)!.35!(bus.east) $) [font=\bfseries] {\lMainBus};
+	
+	\node (pci express) at ($ (bus.north west)!.73!(bus.north east) $) [bus sideload] {PCI - Express};
+	\node (gpu) at (pci express.west) [device internal] {\lGraphicAdapter};
+	
+	\node (pci 0) at ($ (bus.north west)!.85!(bus.north east) $) [bus sideload] {PCI};
+	\node (soundcard) at (pci 0.west) [device internal] {\lSoundAdapter};
+	
+	\node (pci 1) at ($ (bus.north west)!.97!(bus.north east) $) [bus sideload] {PCI};
+	\node (nic) at (pci 1.west) [device internal] {\lNetworkAdapter};
+	
+	% Internal controllers
+	
+	\node (ps2 keyboard) at ($ (bus.south west) -(0, 2) $) [component square] {\lControllerKeyboard\\\textbf{PS/2}};
+	\node (ps2 mouse) at ($ (ps2 keyboard.east) + (1em, 0) $) [component square] {\lControllerMouse\\\textbf{PS/2}};
+	\node (ide) at ($ (ps2 mouse.east) + (1em, 0) $) [component square] {\lControllerDisks\\\textbf{IDE - ATA}\\\textbf{SATA}};
+	\node (usb) at ($ (ide.east) + (1em, 0) $) [component square] {\lUniversalInterface\\\textbf{USB}};
+	\node (lpt) at ($ (usb.east) + (1em, 0) $) [component square] {\lParallelInterface\\\textbf{LPT}};
+	
+	\foreach \e in {ps2 keyboard, ps2 mouse, ide, usb, lpt} {
+		\draw let \p1=(\e.north), \p2=($ (\e.north|-bus.south) +(0, .5\pgflinewidth) $), \n1={veclen(\y2-\y1,\x2-\x1)} in ($ (\e.north) -(0, \pgflinewidth) $) node [connect, minimum height=\n1] {};
+	}
+	
+	\node (cpu) at ($ (bus.north west) +(0, 1) $) [component, anchor=south west] {\lProcessor\\\textbf{CPU}};
+	\node (ram) at ($ (cpu.east) + (1em, 0) $) [component] {\lMemory\\\textbf{RAM}};
+	\node (cmos) at ($ (ram.east) + (1em, 0) $) [component] {\lMemory\\\textbf{CMOS}};
+	\node (eprom) at ($ (cmos.east) + (1em, 0) $) [component] {\lMemory\\\textbf{EPROM}};
+	\node (chipset) at ($ (eprom.east) + (1em, 0) $) [component] {\lChipset\\\textbf{CHIPSET}};
+	
+	\foreach \e in {cpu, ram, cmos, eprom, chipset} {
+		\draw let \p1=(\e.south), \p2=($ (\e.south|-bus.north) -(0, .5\pgflinewidth) $), \n1={veclen(\y2-\y1,\x2-\x1)} in ($ (\e.south) +(0, \pgflinewidth) $) node [connect, minimum height=\n1, anchor=tip 1] {};
+	}
+	
+	\node (cpu fan) at (cpu.north) [component, anchor=south, yshift=-\pgflinewidth] {\textbf{\lFan}\\\textbf{+ \MakeLowercase{\lCooler}}};
+	\node (hdd) at (ide|-gpu) [device internal, anchor=center] {\lHardDrive\\\textbf{HDD}};
+	
+	\begin{scope}[on background layer]
+		\node (motherboard) [fit=(cpu)(ram)(cmos)(eprom)(chipset)(bus)(ps2 keyboard)(ps2 mouse)(ide)(usb)(lpt), inner sep=1.5em, thick, draw, fill=themeGrey!5] {};
+	\end{scope}
+	
+	\node (motherboard label) at ($ (motherboard.north west)!.5!(motherboard.north east) $) [label] {\lMotherboard};
+	\draw (ide) -- (hdd);
+	
+	\draw let \p1=(pci express.north east), \p2=($ (pci 1.south east) $), \n1={veclen(\y2-\y1,\x2-\x1)} in ($ (pci express.north east|-motherboard.north) +(0,2em) $) node [anchor=south west, draw, fill=white, minimum width=\n1, minimum height=1.5cm, align=center] (psu) {\lPSU\\$\sim$ 230V / 500 W\\$=$ 12V, 5V};
+	
+	\draw let \p1=(pci express.north east), \p2=($ (pci 1.south east) $), \n1={veclen(\y2-\y1,\x2-\x1)} in ($ (psu.north) -(0,\pgflinewidth) $) node [anchor=south, draw, fill=white, minimum width=\n1, minimum height=1.75em, align=center] (psu label) {\textbf{\lCooler\space + \MakeLowercase{\lFan}}};
+	
+	\foreach \i in {0.2, 0.4, 0.6, 0.8} {
+		\draw ($ (psu.south west)!\i!(psu.south east) $) -- ($ (psu.south west|-motherboard.north)!\i!(psu.south east|-motherboard.north) $) ;
+	}
+	
+	\begin{scope}[on background layer]
+		\node (case) [fit=(motherboard)(psu)(psu label)(hdd)(gpu)(soundcard)(nic), inner sep=1.5em, thick, draw] {};
+	\end{scope}
+	\node (case label) at ($ (case.north west)!.5!(case.north east) $) [label] {\lPCUnitCase};
+
+	\draw[thick, -{Triangle}] (psu.east) -- ++(2,0);
+	
+	\draw (ps2 keyboard.south) -- ++(down:4) node (keyboard) [device] {\lKeyboard};
+	\draw (ps2 mouse.south) -- ++(down:4) node (mouse)  [device] {\lMouse};
+	\draw (usb.south) -- ++(down:4) node (usb device)  [device] {\lUSBFlashdisk};
+	\draw (lpt.south) -- ++(down:4) node (lpt device)  [device] {\lGraphicAdapter};
+	
+	\draw (gpu.south) -- (gpu.south|-lpt device.north) node (monitor)  [device] {\lMonitor};
+	\draw (soundcard.south) -- (soundcard.south|-lpt device.north) node (repro)  [device] {\lAudioDevices};
+	\draw (nic.south) -- (nic.south|-lpt device.north) node (net)  [device] {\lNetworking};
+	
+	\begin{scope}[on background layer]
+		% Fence:
+		\draw[densely dashed, thick] 
+			($ (case.south east) - (0, .5) $) coordinate (perif north east) 
+			to (\tikztostart-|case.south west) coordinate (perif north west) 
+			-- ++(0, -2)  coordinate (perif south west) 
+			to (\tikztostart-|case.south east)  coordinate (perif south east) 
+			-- cycle;
+		\node (perif label) at ($ (perif south west)!.5!(perif south east) $) [label] {\lPheripherals};
+	\end{scope}
+		
+	\end{tikzpicture}
+\end{document}

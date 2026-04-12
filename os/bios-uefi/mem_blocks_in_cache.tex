@@ -1,0 +1,93 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\usepackage{xint}
+\usepackage{xinttools}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lMemory}{Paměť}
+	\newcommand{\lCacheIndex}{Index cache}
+	\newcommand{\lDireclyMappedBlocks}{4 bloky přímo mapované cache}
+	\newcommand{\lAddressingInMemory}{Adresace bloků v paměti}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm, font=\small,
+		meta component/.style={draw, fill=white, align=center},
+		reg/.style={meta component, anchor=north, minimum width=2cm, minimum height=.35cm, yshift=\pgflinewidth},
+	]
+	
+	\coordinate (h0) at (0, 0);
+	\foreach \i in  {0, ..., 15} {
+		\pgfmathdectoBase{\hex}{\i}{16}
+		\pgfmathparse{Mod(int(\i), 4)*10 + 5}
+		\node (mem \i) at (h0) [reg, fill=themeBlue!\pgfmathresult] {};
+		\node (mem \i\space label) at (mem \i.west) [left, font=\scriptsize] { \texttt{\hex} };
+		\coordinate (h0) at (mem \i.south);
+	}
+	
+	\coordinate (h0) at ($ (mem 6.north east) + (4cm, 0) $);
+	\foreach \i in  {0, ..., 3} {
+		\pgfmathparse{Mod(int(\i), 4)*10 + 5}
+		\node (cache \i) at (h0) [reg, fill=themeBlue!\pgfmathresult] {};
+		\node (cache \i\space label) at (cache \i.east) [right, font=\scriptsize] { \texttt{\i} };
+		\coordinate (h0) at (cache \i.south);
+	}
+	
+	\node at (mem 0.north) [above] {\lMemory};
+	\node at (cache 0.north) [above] {\lCacheIndex};
+	
+	\node at (mem 15.south) [gray, below, text width=2cm, align=center, font=\scriptsize] {\lAddressingInMemory};
+	\node at (cache 3.south) [gray, below, text width=2cm, align=center, font=\scriptsize] {\lDireclyMappedBlocks};
+	
+	\begin{scope}[on background layer]
+		\foreach \i in {0, 4, 8, 12} { \draw[themeBlue!50!white,thick, -{Latex[scale=.5]}, shorten >= 4pt] ($ (mem \i.east) -(.5pt, 0) $)  -- (cache 0.west); }
+		\foreach \i in {3, 7, 11, 15} { \draw[themeBlue, thick, -{Latex[scale=.5]}, shorten >= 4pt] ($ (mem \i.east) -(.5pt, 0) $) -- (cache 3.west); }
+	\end{scope}
+	
+	\end{tikzpicture}
+\end{document}

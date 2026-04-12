@@ -1,0 +1,128 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\usepackage{xint}
+\usepackage{xinttools}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lMemory}{Paměť}
+	\newcommand{\lCacheIndex}{Index cache}
+	\newcommand{\lDireclyMappedBlocks}{4 bloky přímo mapované cache}
+	\newcommand{\lAddressingInMemory}{Adresace bloků v paměti}
+	
+	\newcommand{\lUMAShort}{UMA}
+	\newcommand{\lUMA}{Upper Memory Area}
+	\newcommand{\lConventionalMemory}{Konvenční paměť}
+	\newcommand{\lHMA}{High Memory Area}
+	\newcommand{\lHMAShort}{HMA}
+	\newcommand{\lEMS}{Expanded Memory}
+	\newcommand{\lEMSShort}{EMS}
+	\newcommand{\lFirstMB}{První\\MB}
+	\newcommand{\lExtendedMemory}{Rozšířená paměť}
+	
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm, font=\scriptsize,
+		meta component/.style={draw, fill=white, align=center},
+		reg/.style={meta component, anchor=north, minimum width=3cm, minimum height=.6cm, yshift=\pgflinewidth},
+	]
+	
+	\coordinate (h0) at (0, 0);
+	\foreach \i in  {0, ..., 16} {
+		\pgfmathparse{Mod(int(\i), 4)*10 + 5}
+		\node (mem \i) at (h0) [reg, draw=none, fill=white] {};
+		\coordinate (h0) at (mem \i.south);
+	}
+	
+	\coordinate (h0) at ($ (mem 0.north) + (0, .25cm) $);
+	\foreach \i in  {0, ..., 6} {
+		\node (hma \i) at (h0) [reg, anchor=south, draw=none, fill=white] {};
+		\coordinate (h0) at (hma \i.north);
+	}
+	
+	\node (CONV) [fit=(mem 16)(mem 6), draw, inner sep=0, outer sep=0] {640 K};
+	\node (HMA) [fit=(mem 0)(mem 5), draw, inner sep=0, outer sep=0, yshift=\pgflinewidth, fill=themeBlue!5] {384 K};
+	
+	\node [fit=(hma 0), draw, inner sep=0, outer sep=0, fill=themeOrange!5] {};
+	\node at (hma 0) [] {64 K};
+	\node (EXTRA) [fit=(hma 1)(hma 6), draw, inner sep=0, outer sep=0, yshift=-\pgflinewidth] {};
+	
+	\node at (mem 0.north west) [left] { \texttt{FFFF} };
+	\node at (mem 6.north west) [left] { \texttt{A000} };
+	\node at (mem 16.south west) [left] { \texttt{0000} };
+	
+	\begin{scope}[opacity=0.1, on background layer]
+		\draw[draw=none, gray, densely dashed] (HMA.north east) -- ++(right:1.5cm) coordinate (a);
+		\draw[draw=none, gray, densely dashed] (HMA.south east) -- ++(right:1.5cm) coordinate (b);
+		\draw[draw=none, gray, densely dashed] (CONV.south east) -- ++(right:1.5cm) coordinate (c);
+		\draw[draw=none, gray, densely dashed] (hma 0.south east) -- ++(right:1.5cm) coordinate (d);
+		\draw[draw=none, gray, densely dashed] (hma 0.north east) -- ++(right:1.5cm) coordinate (e);
+		\draw[draw=none, gray, densely dashed] (EXTRA.north east) -- ++(right:1.5cm) coordinate (f);
+	\end{scope}
+	
+	\begin{scope}[opacity=0.1, on background layer]
+		\draw[draw=none, gray, densely dashed] (HMA.north west) -- ++(left:1.5cm) coordinate (aa);
+		\draw[draw=none, gray, densely dashed] (HMA.south west) -- ++(left:1.5cm) coordinate (bb);
+		\draw[draw=none, gray, densely dashed] (CONV.south west) -- ++(left:1.5cm) coordinate (cc);
+		\draw[draw=none, gray, densely dashed] (hma 0.south west) -- ++(left:1.5cm) coordinate (dd);
+		\draw[draw=none, gray, densely dashed] (hma 0.north west) -- ++(left:1.5cm) coordinate (ee);
+		\draw[draw=none, gray, densely dashed] (EXTRA.north west) -- ++(left:1.5cm) coordinate (ff);
+	\end{scope}
+	
+	\begin{scope}
+		\draw[|-|] (a) -- node[gray, midway, right, text width=1cm] {\lUMA} node[ midway, left, align=right, text width=1cm] {\lUMAShort} (b);
+		\draw[|-|] ($ (b) +(0, \pgflinewidth) $) --  node[gray, midway, right, text width=1cm] {\lConventionalMemory} (c);
+		\draw[|-|] (d) -- node[gray, midway, right, text width=1cm] {\lHMA} node[ midway, left, align=right, text width=1cm] {\lHMAShort} (e);
+		\draw[|-|] ($ (e) -(0, \pgflinewidth) $) -- node[gray, midway, right, text width=1cm] {\lEMS} node[ midway, left, align=right, text width=1cm] {\lEMSShort} (f);
+	\end{scope}
+	\begin{scope}
+		\draw[|-|] (aa) --  node[gray, midway, left, text width=1.1cm, align=right] {\lFirstMB} (cc);
+		\draw[|-|] (dd) --  node[gray, midway, left, text width=1.1cm, align=right] {\lExtendedMemory} (ff);
+	\end{scope}
+	\end{tikzpicture}
+\end{document}

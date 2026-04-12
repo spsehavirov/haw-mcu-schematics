@@ -1,0 +1,115 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\usepackage{xint}
+\usepackage{xinttools}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lPhysical}{Physical}
+	\newcommand{\lTransaction}{Transaction}
+	\newcommand{\lDataLink}{Data link}
+	\newcommand{\lSubBlockLogic}{Logical sub-block}
+	\newcommand{\lSubBlockElectric}{Electrical sub-block}
+}
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm, font=\Large,
+		meta component/.style={draw, fill=white, align=center, rounded corners=4pt},
+		dev/.style={meta component, anchor=north, minimum width=8cm, minimum height=2.5cm, font=\large\bfseries},
+		double dev/.style={dev, minimum height=6.5cm},
+		inner dev/.style={dev, minimum width=6cm, minimum height=1.5cm},
+	]
+	
+	\begin{scope}
+		\node (transaction 0) [dev] {};
+		\node (data 0) at ($ (transaction 0.south) - (0, .25cm) $) [dev] {};
+		\node (phy 0) at ($ (data 0.south) - (0, .25cm)  $) [double dev] {};
+		\coordinate (o) at ($ (phy 0.north)!.3!(phy 0.south) $);
+		\begin{scope}[shift=(o)]
+			\node (sub logic 0) [inner dev] {};
+			\node (sub electric 0) [inner dev, below= of sub logic 0] {};
+		\end{scope}
+		\draw[thick, dashed, shorten <= 2pt, shorten >= 2pt] (transaction 0.north) -- (phy 0.south);
+	\end{scope}
+	
+	\begin{scope}[xshift=10cm]
+		\node (transaction 1) [dev] {};
+		\node (data 1) at ($ (transaction 1.south) - (0, .25cm) $) [dev] {};
+		\node (phy 1) at ($ (data 1.south) - (0, .25cm)  $) [double dev] {};
+		\coordinate (o) at ($ (phy 1.north)!.3!(phy 1.south) $);
+		\begin{scope}[shift=(o)]
+			\node (sub logic 1) [inner dev] {};
+			\node (sub electric 1) [inner dev, below= of sub logic 1] {};
+		\end{scope}
+		\draw[thick, opacity=.9, dashed, shorten <= 2pt, shorten >= 2pt] (transaction 1.north) -- (phy 1.south);
+	\end{scope}
+	
+	\node at (transaction 0) {\lTransaction};
+	\node at (transaction 1) {\lTransaction};
+	
+	\node at (data 0) {\lDataLink};
+	\node at (data 1) {\lDataLink};
+	
+	\node at (sub logic 0) {\lSubBlockLogic};
+	\node at (sub logic 1) {\lSubBlockLogic};
+	
+	\node at (sub electric 0) {\lSubBlockElectric};
+	\node at (sub electric 1) {\lSubBlockElectric};
+	
+	\node at ($ (phy 0.north) -(0, 2em) $) [below] {\lPhysical};
+	\node at ($ (phy 1.north) -(0, 2em) $) [below] {\lPhysical};
+	
+	\draw ($ (phy 0.south west)!.75!(phy 0.south east) $) coordinate (tx 0) node[above, font=\normalsize] {TX};
+	\draw ($ (phy 0.south west)!.25!(phy 0.south east) $) coordinate (rx 0) node[above, font=\normalsize] {RX};
+		 
+	\draw ($ (phy 1.south west)!.75!(phy 1.south east) $) coordinate (tx 1) node[above, font=\normalsize] {TX};
+	\draw ($ (phy 1.south west)!.25!(phy 1.south east) $) coordinate (rx 1) node[above, font=\normalsize] {RX};
+	
+	\draw [-{Triangle[scale=.8]}, line width=.3em, black!80!white] (tx 0) -- ++(0, -1cm) -| (rx 1);
+	\draw [-{Triangle[scale=.8]}, line width=.3em, black!80!white] (tx 1) -- ++(0, -1.5cm) -| (rx 0);
+	
+	\end{tikzpicture}
+\end{document}

@@ -1,0 +1,88 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lOS}{Operační systém}
+	\newcommand{\lEFI}{Extensible Firmware Interface}
+	\newcommand{\lFirmware}{Firmware}
+	\newcommand{\lHardware}{Hardware}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		element/.style={draw, rounded corners=4pt, minimum width=3.5cm, minimum height=1cm}, %rounded corners=4pt
+		arrow/.style={draw, single arrow, single arrow head extend=3pt},
+	]
+	%\draw[help lines] (-15,-15) grid[step=0.25] (15,2);
+
+	\pgfdeclarelayer{underground}
+	\pgfdeclarelayer{background}
+	\pgfdeclarelayer{foreground}
+	\pgfsetlayers{underground,background,main,foreground}
+	
+	\begin{scope}
+		\begin{pgfonlayer}{underground}
+			\draw node (os) [element, fill=themeBlue!10] {\lOS};
+		\end{pgfonlayer}
+		
+		\draw node (efi) [element, draw=none, minimum width=5cm, below= of os, fill=white] {\lEFI};
+		
+		\begin{pgfonlayer}{underground}
+			\draw node (firmware) [element, fill=themeBlue!10, below= of efi] {\lFirmware};
+			\draw node (hardware) [element, fill=themeBlue!10, below= of firmware] {\lHardware};
+		\end{pgfonlayer}
+		\begin{scope}[on background layer]
+			\path ($ (efi.north) -(0, 1pt) $) node (a) [arrow, fill=white, minimum height=.25cm, rotate=90, anchor=tail] {}; 
+			\path ($ (efi.south) +(0, 1pt) $) node (b) [arrow, fill=white, minimum height=.25cm, rotate=-90, anchor=tail] {}; 
+		\end{scope}
+		
+		\draw[rounded corners=4pt] ($ (a.after tail|-efi.north west) +(\pgflinewidth, 0) $) -- (efi.north west) -- (efi.south west) --  ($ (b.before tail|-efi.south west) +(\pgflinewidth, 0) $) ;
+		\draw[rounded corners=4pt]  ($ (a.before tail|-efi.north west) -(\pgflinewidth, 0) $) --  (efi.north east) -- (efi.south east) -- ($ (b.after tail|-efi.south west) -(\pgflinewidth, 0) $);
+	\end{scope}
+		
+	\end{tikzpicture}
+\end{document}

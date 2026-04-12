@@ -1,0 +1,92 @@
+\documentclass[margin=2pt]{standalone}
+\usepackage[table]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{lmodern}
+\usepackage{helvet}
+
+\usepackage{tikz}
+
+\usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{csquotes}
+\usepackage{xparse}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% Use \phantom to hide text for exams
+\renewcommand{\phantom}{}
+
+\iflanguage{czech}{
+	\newcommand{\lData}{Datová\\část}
+	\newcommand{\lRegisters}{Registry}
+	\newcommand{\lCacheOne}{On-chip\\L1\\caches}
+	\newcommand{\lCacheTwo}{Off-chip\\L2\\caches\\\\(SRAM)}
+	\newcommand{\lRAM}{Hlavní\\paměť\\\\(DRAM)}
+	\newcommand{\lHDD}{Vedlejší\\paměť\\\\(Disk)}
+	\newcommand{\lProcessor}{Procesor}
+	\newcommand{\lCtrlUnit}{Řídící jednotka}
+}
+
+
+\usetikzlibrary{
+	hobby,
+	babel,
+	intersections,
+	spath3,
+	shapes.arrows,
+	shapes.geometric,
+	shapes.symbols,
+	fit,
+	backgrounds, 
+	calc,
+	tikzmark,
+	decorations.pathreplacing,
+	angles,
+	arrows.meta,
+	quotes,
+	positioning,
+}
+
+\definecolor{themeBlue}{RGB}{1, 103, 143}
+\definecolor{themeOrange}{RGB}{221, 109, 16}
+\definecolor{themeTeal}{RGB}{18, 54, 69}
+\definecolor{themeGrey}{RGB}{120, 121, 124}
+\definecolor{themeGreen}{HTML}{99ced3}
+
+\begin{document}
+	\begin{tikzpicture}[
+		node distance=.2cm,
+		font=\small,
+		%thick,
+		meta component/.style={draw, fill=white, align=center},
+		data square/.style={meta component, draw, anchor=west, minimum size=4cm},
+		reg/.style={meta component, anchor=west, minimum width=3.5cm, minimum height=.75cm, rotate=-90},
+		ctrl unit/.style={meta component, anchor=south, minimum width=3.5cm, minimum height=.75cm},
+		cache l1/.style={meta component, anchor=west, minimum width=2cm, minimum height=3cm},
+		cache l2/.style={meta component, anchor=west, minimum width=2cm, minimum height=4cm},
+		ram/.style={meta component, anchor=west, minimum width=2cm, minimum height=5cm},
+		hdd/.style={meta component, anchor=west, minimum width=2cm, minimum height=8cm},
+	]
+	
+	\node (data) [data square] {};
+	\node (data label) at ($ (data.west)!.1!(data.east)$) [anchor=west, minimum width=1cm, align=left] {\lData};
+	\node (reg) at ($ (data.north east)!.5!(data.south east) -(2em, 0) $) [reg, anchor=center] {\lRegisters};
+	
+	\node (L1) at ($ (data.east) +(1em, 0) $) [cache l1] {\lCacheOne};
+	\node (L2) at ($ (L1.east) +(1.5cm, 0) $) [cache l2] {\lCacheTwo};
+	\node (ram) at ($ (L2.east) +(1em, 0) $) [ram] {\lRAM};
+	\node (hdd) at ($ (ram.east) +(1em, 0) $) [hdd] {\lHDD};
+	
+	\node (ctrl) at ($ (data.north) +(0, 1em) $) [ctrl unit] {\lCtrlUnit};
+	\node (cpu label) at ($ (data.north west)!.5!(L1.north east) +(0, 2cm) $) [font=\large] {\lProcessor};
+	
+	\begin{scope}[on background layer]
+		\path[fill=themeBlue!5] (data.north east) -- (hdd.north west) -- (hdd.south west) -- (data.south east) -- cycle;
+	\end{scope}
+	
+	\node (cpu) [fit=(data)(L1)(ctrl)(cpu label), draw, inner sep=1em] {};
+	
+	\end{tikzpicture}
+\end{document}
